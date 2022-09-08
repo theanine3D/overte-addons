@@ -32,7 +32,8 @@
     });
 
     // PET VARIABLES
-    var petOwner = MyAvatar['sessionUUID'];
+
+    var petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName };
     var pet = {
         petName: "",
         petFeedCount: 0,
@@ -41,13 +42,40 @@
         petSpecies: 0
     };
     var currentDate = new Date();
+    var followState = true;
 
-    // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION. Make sure you make the coresponding change to the .js file as well.
+    // CREATE BASIC 3D PET ENTITY
+    var petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
+    Entities.editEntity(petEntityID, {
+        "parentID": petOwner.uuid,
+        "name": "pet_" + petOwner.name + "_" + "PETNAME",
+    });
+    Entities.editEntity(petEntityID, {
+        "localPosition": {
+            "x": -0.5526,
+            "y": 0.8132,
+            "z": 0.2594
+        },
+        "dimensions": {
+            "x": 0.253089040517807,
+            "y": 0.25328126549720764,
+            "z": 0.13694989681243896
+        },
+        "rotation": {
+            "x": -0.0000152587890625,
+            "y": -1,
+            "z": -0.0000152587890625,
+            "w": -0.0000152587890625
+        }
+    });
+
+
+    // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
     var LIST_SPECIES = ['Rice Ball', 'Fairy'];
     var SPECIES = Array();
 
     var LIST_ANIMATIONS =
-        ['Neutral', 'Happy', 'Sad', 'Angry'];
+        ['Neutral', 'Happy', 'Sad'];
     var ANIMATIONS = Array();
 
     LIST_ANIMATIONS.forEach(function (name) {
@@ -114,11 +142,10 @@
                 lastFeedDate: currentDate,
                 petSpecies: (Math.floor(Math.random() * ((LIST_SPECIES.length - 1) - 0 + 1) + 0))
             };
-        }
 
-        else {
-            // Existing pet data was found, so do nothing.
-            // print("Existing pet data found.");
+            Entities.editEntity(petEntityID, {
+                "name": "pet_" + petOwner.name + "_" + pet.petName,
+            });
         }
         tablet.emitScriptEvent(JSON.stringify(pet));
         print("Sent pet data to tablet.")
@@ -147,7 +174,7 @@
         //Here you can react to the different attributes of the object recieved from the HTML UI
         /*
         if(eventObj.attribute === "installScript"){
- 
+     
             //We could reply using: 
             //tablet.emitScriptEvent(JSON.stringify(anyJSONObject));
         }
@@ -167,10 +194,19 @@
 
             // if FEED button was pressed....
             if (message === "feed") {
-                print("Feed button was pressed.");
                 feedPet();
             }
 
+            // if FOLLOW button was pressed....
+            if (message === "follow") {
+                print("Follow button was pressed.");
+                if (followState) {
+                    followState = false;
+                }
+                else {
+                    followState = true;
+                }
+            }
         }
 
 
