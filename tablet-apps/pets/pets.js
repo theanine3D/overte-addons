@@ -47,8 +47,31 @@
     // CREATE BASIC 3D PET ENTITY
     var petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
     Entities.editEntity(petEntityID, {
+        "modelURL": Script.resolvePath(".") + "assets/pets/Egg.fbx",
+        "animation": {
+            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
+            "allowTranslation": false,
+            "fps": 24,
+            "currentFrame": 8.702019691467285,
+            "running": true,
+            "firstFrame": 1,
+            "lastFrame": 23
+        },
+    });
+
+    Entities.editEntity(petEntityID, {
+        "dimensions": {
+            "x": (Entities.getEntityProperties(petEntityID).naturalDimensions.x * MyAvatar.scale),
+            "y": (Entities.getEntityProperties(petEntityID).naturalDimensions.y * MyAvatar.scale),
+            "z": (Entities.getEntityProperties(petEntityID).naturalDimensions.y * MyAvatar.scale)
+        },
+        "rotation":
+            Quat.dot(MyAvatar.orientation, Quat.fromVec3Degrees({ "x": 0, "y": 180, "x": 0 }))
+    });
+
+    Entities.editEntity(petEntityID, {
         "parentID": petOwner.uuid,
-        "name": "pet_" + petOwner.name + "_" + "PETNAME",
+        "name": "pet_" + petOwner.name + "_" + "Egg",
     });
     Entities.editEntity(petEntityID, {
         "localPosition": {
@@ -56,17 +79,6 @@
             "y": 0.8132,
             "z": 0.2594
         },
-        "dimensions": {
-            "x": 0.253089040517807,
-            "y": 0.25328126549720764,
-            "z": 0.13694989681243896
-        },
-        "rotation": {
-            "x": -0.0000152587890625,
-            "y": -1,
-            "z": -0.0000152587890625,
-            "w": -0.0000152587890625
-        }
     });
 
 
@@ -79,14 +91,14 @@
     var ANIMATIONS = Array();
 
     LIST_ANIMATIONS.forEach(function (name) {
-        var animationURL = Script.resolvePath("assets/pets/" + name + ".glb");
+        var animationURL = Script.resolvePath(".") + "assets/pets/" + name + ".fbx";
         var resourceAnim = AnimationCache.prefetch(animationURL);
         var animation = AnimationCache.getAnimation(animationURL);
         ANIMATIONS[name] = { name: name, url: animationURL, resource: resourceAnim, animation: animation };
     });
 
     LIST_SPECIES.forEach(function (name) {
-        var speciesURL = Script.resolvePath("assets/pets/" + name + ".glb");
+        var speciesURL = Script.resolvePath("assets/pets/") + name + ".fbx";
         var thumbnailURL = Script.resolvePath("assets/pets/" + name + ".png");
         var resourceSpecies = AnimationCache.prefetch(speciesURL);
         var resourceSpeciesThumb = AnimationCache.prefetch(thumbnailURL);
@@ -144,8 +156,26 @@
             };
 
             Entities.editEntity(petEntityID, {
-                "name": "pet_" + petOwner.name + "_" + pet.petName,
+                "name": "pet_" + petOwner.name + "_" + pet.petName
             });
+
+            Entities.editEntity(petEntityID, {
+                "modelURL": ""
+            });
+
+            Entities.editEntity(petEntityID, {
+                "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
+                "animation": {
+                    "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
+                    "allowTranslation": false,
+                    "fps": 24,
+                    "currentFrame": 8.702019691467285,
+                    "running": true,
+                    "firstFrame": 1,
+                    "lastFrame": 23
+                },
+            });
+
         }
         tablet.emitScriptEvent(JSON.stringify(pet));
         print("Sent pet data to tablet.")
@@ -236,6 +266,7 @@
         }
 
         tablet.screenChanged.disconnect(onScreenChanged);
+        Entities.deleteEntity(petEntityID);
         tablet.removeButton(button);
     }
 
