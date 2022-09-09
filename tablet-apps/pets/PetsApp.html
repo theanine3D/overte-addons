@@ -175,14 +175,14 @@
             <p>Choose an action:
             <p>
                 <button class="btn btn-light btnAction" onclick="feedButton();">Feed</button>
-                <button class="btn btn-light btnAction">Call / Leave</button>
+                <button class="btn btn-light btnAction" onclick="followButton();">Toggle Hide</button>
             </p>
             <p>
-                <button class="btn btn-light btnAction">Reposition</button>
+                <button class="btn btn-light btnAction">Customize</button>
                 <button class="btn btn-light btnAction">Rename</button>
             </p>
             <p style="margin-bottom:0px;">
-                <button class="btn btn-light btnAction">Release</button>
+                <button class="btn btn-light btnAction">Abandon</button>
             </p>
             <p><em><span id="statusMsg"></span></em></p>
             <br /><em><span id="credits">app by @Theanine3D</span></em>
@@ -222,7 +222,6 @@
                 }
             }
         }
-        buttonsEnabled(false);
 
         // BEGIN PET CODE
 
@@ -297,7 +296,10 @@
 
         function feedButton() {
             EventBridge.emitWebEvent('feed');
-            buttonsEnabled(false);
+        }
+
+        function followButton() {
+            EventBridge.emitWebEvent("follow");
         }
 
         // Send an event to pets.js when the page loads and is ready to get things rolling
@@ -312,17 +314,6 @@
             console.log("Received message from JS.");
             console.log(message);
 
-            // check if received pet presets, and if true, update the HTML pet presets
-            if (message.indexOf("speciesList") != -1) {
-                updatePetPresets(message);
-            }
-
-            // check if received pet data, and if true, update the HTML pet data
-            if (message.indexOf("petBirthDay") != -1 && message.indexOf("lastFeedDate") != -1) {
-                updatePetData(message);
-                buttonsEnabled(true);
-            }
-
             // check if script requested to lock all buttons
             if (message === "lock buttons") {
                 buttonsEnabled(false);
@@ -331,7 +322,18 @@
             if (message === "unlock buttons") {
                 buttonsEnabled(true);
             }
+
+            // check if received pet presets, and if true, update the HTML pet presets
+            if (message.indexOf("speciesList") != -1) {
+                updatePetPresets(message);
+            }
+
+            // check if received pet data, and if true, update the HTML pet data
+            if (message.indexOf("petBirthDay") != -1 && message.indexOf("lastFeedDate") != -1) {
+                updatePetData(message);
+            }
         });
+
 
     </script>
 </body>
