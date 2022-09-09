@@ -178,7 +178,7 @@
                 <button class="btn btn-light btnAction" onclick="hideButton();">Show/Hide</button>
             </p>
             <p>
-                <button class="btn btn-light btnAction">Customize</button>
+                <button class="btn btn-light btnAction" onclick="respawnButton();">Respawn</button>
                 <button class="btn btn-light btnAction" onclick="renameButton();">Rename</button>
             </p>
             <p style=" margin-bottom:0px;">
@@ -304,6 +304,10 @@
 
         function renameButton() {
             EventBridge.emitWebEvent("rename");
+        }
+
+        function respawnButton() {
+            EventBridge.emitWebEvent("respawn");
         }
 
         // Send an event to pets.js when the page loads and is ready to get things rolling
