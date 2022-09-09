@@ -137,6 +137,8 @@
         if (pet['petName'] === '') {
 
             // No pet data found, so prompt the user to create one
+            tablet.emitScriptEvent("lock buttons");
+
             var newPetName = "";
 
             while (newPetName === "" || newPetName === null) { // check if user actually entered any name
@@ -178,6 +180,8 @@
                     "visible": true
                 });
             }, 200);
+
+            tablet.emitScriptEvent("unlock buttons");
 
         }
 
