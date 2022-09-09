@@ -97,9 +97,11 @@
     LIST_SPECIES.forEach(function (name) {
         var speciesURL = Script.resolvePath("assets/pets/") + name + ".fbx";
         var thumbnailURL = Script.resolvePath("assets/pets/" + name + ".png");
-        var resourceSpecies = AnimationCache.prefetch(speciesURL);
-        var resourceSpeciesThumb = AnimationCache.prefetch(thumbnailURL);
-        SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL, resourceSpecies: resourceSpecies, resourceSpeciesThumb: resourceSpeciesThumb };
+        // var resourceSpecies = ModelCache.prefetch(speciesURL);
+        // var resourceSpeciesTextures = TextureCache.prefetch(speciesURL);
+        // var resourceSpeciesThumb = TextureCache.prefetch(thumbnailURL);
+        SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL };
+        // SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL, resourceSpecies: resourceSpecies, resourceSpeciesThumb: resourceSpeciesThumb };
     });
 
 
