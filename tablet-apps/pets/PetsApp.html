@@ -175,13 +175,13 @@
             <p>Choose an action:
             <p>
                 <button class="btn btn-light btnAction" onclick="feedButton();">Feed</button>
-                <button class="btn btn-light btnAction" onclick="followButton();">Toggle Hide</button>
+                <button class="btn btn-light btnAction" onclick="hideButton();">Show/Hide</button>
             </p>
             <p>
                 <button class="btn btn-light btnAction">Customize</button>
-                <button class="btn btn-light btnAction">Rename</button>
+                <button class="btn btn-light btnAction" onclick="renameButton();">Rename</button>
             </p>
-            <p style="margin-bottom:0px;">
+            <p style=" margin-bottom:0px;">
                 <button class="btn btn-light btnAction">Abandon</button>
             </p>
             <p><em><span id="statusMsg"></span></em></p>
@@ -197,7 +197,7 @@
         integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
         crossorigin="anonymous"></script>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> -->
     <script>
         var parsedUrl = new URL(window.location.href);
         var appUUID = parsedUrl.searchParams.get("appUUID");
@@ -298,8 +298,12 @@
             EventBridge.emitWebEvent('feed');
         }
 
-        function followButton() {
-            EventBridge.emitWebEvent("follow");
+        function hideButton() {
+            EventBridge.emitWebEvent("hide");
+        }
+
+        function renameButton() {
+            EventBridge.emitWebEvent("rename");
         }
 
         // Send an event to pets.js when the page loads and is ready to get things rolling
