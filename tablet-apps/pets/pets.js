@@ -168,7 +168,8 @@
                     "firstFrame": 1,
                     "lastFrame": 23
                 },
-                "visible": false
+                "visible": false,
+                "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 })
             });
 
             Script.setTimeout(function () {
@@ -186,7 +187,6 @@
 
 
         Entities.editEntity(petEntityID, {
-            "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
             "name": "pet_" + petOwner.name + "_" + pet.petName,
         });
 
@@ -237,23 +237,20 @@
             if (message === "feed") {
                 feedPet();
             }
-
-            // if FOLLOW button was pressed....
-            if (message === "follow") {
-                followState = !followState;
-            }
-
+            // END FEED
 
             // if HIDE button was pressed....
             if (message === "hide") {
+                print("HIDE button was pressed. *******************");
+
                 Entities.editEntity(petEntityID, {
                     "visible": !Entities.getEntityProperties(petEntityID).visible
                 });
             }
+            // END HIDE
 
             // if RENAME button was pressed....
             if (message === "rename") {
-                print("Rename button was pressed.");
                 var newPetName = "";
                 while (newPetName === "" || newPetName === null) { // check if user actually entered any name
                     newPetName = Window.prompt("Please enter the name of your new pet:", "PET NAME");
@@ -265,6 +262,61 @@
 
                 updatePets();
             }
+            // END RENAME
+
+            // if RESPAWN button was pressed....
+            if (message === "respawn") {
+
+                // check if pet model entity doesn't exist. if it doesn't, recreate it
+                if (Entities.isAddedEntity(petEntityID) === false) {
+                    petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
+                    Entities.editEntity(petEntityID, {
+                        "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
+                        "animation": {
+                            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
+                            "allowTranslation": false,
+                            "fps": 24,
+                            "currentFrame": 8.702019691467285,
+                            "running": true,
+                            "firstFrame": 1,
+                            "lastFrame": 23
+                        },
+                        "rotation": { x: 0, y: 0, z: 0 },
+                        "visible": false
+                    });
+
+                    Entities.editEntity(petEntityID, {
+                        "parentID": petOwner.uuid,
+                        "name": "pet_" + petOwner.name + "_" + pet.petName,
+                        "visible": false
+                    });
+                    Script.setTimeout(function () {
+                        Entities.editEntity(petEntityID, {
+                            "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+                            "visible": true
+                        });
+                    }, 200);
+                }
+
+                Entities.editEntity(petEntityID, {
+                    "localPosition": {
+                        "x": -0.5526,
+                        "y": 0.8132,
+                        "z": 0.2594,
+                    },
+                    "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
+                });
+
+                Script.setTimeout(function () {
+                    Entities.editEntity(petEntityID, {
+                        "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+                        "visible": true
+                    });
+                }, 200);
+
+                updatePets();
+            }
+            // END RESPAWN
 
 
         }
