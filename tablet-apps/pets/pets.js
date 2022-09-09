@@ -23,8 +23,6 @@
 
     var tablet = Tablet.getTablet("com.highfidelity.interface.tablet.system");
 
-    tablet.screenChanged.connect(onScreenChanged);
-
     var button = tablet.addButton({
         text: APP_NAME,
         icon: APP_ICON_INACTIVE,
@@ -39,7 +37,8 @@
         petFeedCount: 0,
         petBirthDay: new Date(),
         lastFeedDate: new Date(),
-        petSpecies: 0
+        petSpecies: 0,
+        petColor: 0
     };
     var currentDate = new Date();
     var followState = true;
@@ -103,9 +102,9 @@
         SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL, resourceSpecies: resourceSpecies, resourceSpeciesThumb: resourceSpeciesThumb };
     });
 
-    function clicked() {
+
+    function onClicked() {
         if (appStatus === true) {
-            tablet.WebEventReceived.disconnect(onWebEventReceived);
             tablet.gotoHomeScreen();
             appStatus = false;
         } else {
@@ -113,7 +112,6 @@
 
             //Data can be transmitted using GET methode, through paramater in the URL.
             tablet.gotoWebScreen(APP_URL);
-            tablet.webEventReceived.connect(onWebEventReceived);
             appStatus = true;
         }
 
@@ -122,14 +120,12 @@
         });
     }
 
-    button.clicked.connect(clicked);
-
     function updatePetPresets() {
         var petPresetList = {
             "speciesList": LIST_SPECIES
         };
         tablet.emitScriptEvent(JSON.stringify(petPresetList));
-        print("Sent pet presets to tablet.")
+        // print("Sent pet presets to tablet.")
     }
 
     function updatePets() {
@@ -153,7 +149,8 @@
                 petFeedCount: 0,
                 petBirthDay: currentDate,
                 lastFeedDate: currentDate,
-                petSpecies: (Math.floor(Math.random() * ((LIST_SPECIES.length - 1) - 0 + 1) + 0))
+                petSpecies: (Math.floor(Math.random() * ((LIST_SPECIES.length - 1) - 0 + 1) + 0)),
+                petColor: Math.random()
             };
 
             Entities.editEntity(petEntityID, {
@@ -194,7 +191,7 @@
         });
 
         tablet.emitScriptEvent(JSON.stringify(pet));
-        print("Sent pet data to tablet.")
+        // print("Sent pet data to tablet.")
 
     }
 
@@ -243,14 +240,33 @@
 
             // if FOLLOW button was pressed....
             if (message === "follow") {
-                print("Follow button was pressed.");
-                if (followState) {
-                    followState = false;
-                }
-                else {
-                    followState = true;
-                }
+                followState = !followState;
             }
+
+
+            // if HIDE button was pressed....
+            if (message === "hide") {
+                Entities.editEntity(petEntityID, {
+                    "visible": !Entities.getEntityProperties(petEntityID).visible
+                });
+            }
+
+            // if RENAME button was pressed....
+            if (message === "rename") {
+                print("Rename button was pressed.");
+                var newPetName = "";
+                while (newPetName === "" || newPetName === null) { // check if user actually entered any name
+                    newPetName = Window.prompt("Please enter the name of your new pet:", "PET NAME");
+                }
+                pet.petName = newPetName;
+                Entities.editEntity(petEntityID, {
+                    "name": "pet_" + petOwner.name + "_" + pet.petName
+                });
+
+                updatePets();
+            }
+
+
         }
 
 
@@ -266,6 +282,7 @@
         } else {
             appStatus = false;
             updatePets();
+            tablet.closeDialog();
         }
 
         button.editProperties({
@@ -283,7 +300,12 @@
         tablet.screenChanged.disconnect(onScreenChanged);
         Entities.deleteEntity(petEntityID);
         tablet.removeButton(button);
+        tablet.closeDialog();
     }
+
+    button.clicked.connect(onClicked);
+    tablet.screenChanged.connect(onScreenChanged);
+    tablet.webEventReceived.connect(onWebEventReceived);
 
     Script.scriptEnding.connect(cleanup);
 }());
