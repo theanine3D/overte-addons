@@ -57,16 +57,7 @@
             "firstFrame": 1,
             "lastFrame": 23
         },
-    });
-
-    Entities.editEntity(petEntityID, {
-        "dimensions": {
-            "x": (Entities.getEntityProperties(petEntityID).naturalDimensions.x * MyAvatar.scale),
-            "y": (Entities.getEntityProperties(petEntityID).naturalDimensions.y * MyAvatar.scale),
-            "z": (Entities.getEntityProperties(petEntityID).naturalDimensions.y * MyAvatar.scale)
-        },
-        "rotation":
-            Quat.dot(MyAvatar.orientation, Quat.fromVec3Degrees({ "x": 0, "y": 180, "x": 0 }))
+        "rotation": { x: 0, y: 0, z: 0 }
     });
 
     Entities.editEntity(petEntityID, {
@@ -77,10 +68,17 @@
         "localPosition": {
             "x": -0.5526,
             "y": 0.8132,
-            "z": 0.2594
+            "z": 0.2594,
         },
+        "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
+        "visible": false
     });
-
+    Script.setTimeout(function () {
+        Entities.editEntity(petEntityID, {
+            "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+            "visible": true
+        });
+    }, 200);
 
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
     var LIST_SPECIES = ['Rice Ball', 'Fairy'];
@@ -135,6 +133,7 @@
     }
 
     function updatePets() {
+
         if (pet['petName'] === '') {
 
             // No pet data found, so prompt the user to create one
@@ -160,10 +159,6 @@
             });
 
             Entities.editEntity(petEntityID, {
-                "modelURL": ""
-            });
-
-            Entities.editEntity(petEntityID, {
                 "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
                 "animation": {
                     "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
@@ -174,9 +169,26 @@
                     "firstFrame": 1,
                     "lastFrame": 23
                 },
+                "visible": false
             });
 
+            Script.setTimeout(function () {
+                Entities.editEntity(petEntityID, {
+                    "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+                    "visible": true
+                });
+            }, 200);
+
         }
+
+        // update some stats
+
+
+        Entities.editEntity(petEntityID, {
+            "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
+            "name": "pet_" + petOwner.name + "_" + pet.petName,
+        });
+
         tablet.emitScriptEvent(JSON.stringify(pet));
         print("Sent pet data to tablet.")
 
@@ -188,7 +200,6 @@
         if (pet.lastFeedDate.getMonth() === currentDate.getMonth() && pet.lastFeedDate.getFullYear() === currentDate.getFullYear() && pet.lastFeedDate.getDate() === currentDate.getDate()) {
             // if pet was already fed today, notify the pet owner
             Window.alert("Your pet is full. Try again later.");
-            print(JSON.stringify(pet.petFeedCount));
         }
         else {
             pet.lastFeedDate = new Date();
@@ -196,7 +207,6 @@
             Window.alert("Yummy! ${pet.petName} appreciates you!");
             updatePets();
         }
-        tablet.emitScriptEvent("unlock buttons");
     }
 
 
@@ -251,6 +261,7 @@
 
         } else {
             appStatus = false;
+            updatePets();
         }
 
         button.editProperties({
