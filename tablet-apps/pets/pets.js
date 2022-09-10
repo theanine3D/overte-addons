@@ -320,6 +320,69 @@
             }
             // END RESPAWN
 
+            // if ABANDON button was pressed....
+            if (message === "abandon") {
+
+                var confirmAbandon = Window.confirm("Are you SURE you want to abandon your pet? If you say yes, your pet will disappear, never to be seen again...");
+
+                if (confirmAbandon === true) {
+                    petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName };
+                    pet = {
+                        petName: "",
+                        petFeedCount: 0,
+                        petBirthDay: new Date(),
+                        lastFeedDate: new Date(),
+                        petSpecies: 0,
+                        petColor: 0
+                    };
+
+                    Entities.deleteEntity(petEntityID);
+
+                    petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
+                    Entities.editEntity(petEntityID, {
+                        "modelURL": Script.resolvePath(".") + "assets/pets/Egg.fbx",
+                        "animation": {
+                            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
+                            "allowTranslation": false,
+                            "fps": 24,
+                            "currentFrame": 8.702019691467285,
+                            "running": true,
+                            "firstFrame": 1,
+                            "lastFrame": 23
+                        },
+                        "rotation": { x: 0, y: 0, z: 0 }
+                    });
+
+                    Entities.editEntity(petEntityID, {
+                        "parentID": petOwner.uuid,
+                        "name": "pet_" + petOwner.name + "_" + "Egg",
+                    });
+                    Entities.editEntity(petEntityID, {
+                        "localPosition": {
+                            "x": -0.5526,
+                            "y": 0.8132,
+                            "z": 0.2594,
+                        },
+                        "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
+                        "visible": false
+                    });
+                    Script.setTimeout(function () {
+                        Entities.editEntity(petEntityID, {
+                            "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+                            "visible": true
+                        });
+                    }, 200);
+
+                    updatePets();
+                }
+                else {
+                    Window.alert("Your pet is grateful.");
+                }
+                updatePets();
+            }
+            // END ABANDON
+
+
 
         }
 
