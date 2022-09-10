@@ -182,7 +182,7 @@
                 <button class="btn btn-light btnAction" onclick="renameButton();">Rename</button>
             </p>
             <p style=" margin-bottom:0px;">
-                <button class="btn btn-light btnAction">Abandon</button>
+                <button class="btn btn-light btnAction" onclick="abandonButton();">Abandon</button>
             </p>
             <p><em><span id="statusMsg"></span></em></p>
             <br /><em><span id="credits">app by @Theanine3D</span></em>
@@ -308,6 +308,10 @@
 
         function respawnButton() {
             EventBridge.emitWebEvent("respawn");
+        }
+
+        function abandonButton() {
+            EventBridge.emitWebEvent("abandon");
         }
 
         // Send an event to pets.js when the page loads and is ready to get things rolling
