@@ -4,6 +4,10 @@
 //  Created by Pedro Valencia / Theanine3D on September 4, 2022
 //  Copyright 2022 Theanine3D
 //
+//  youtube.com/c/theanine3D
+//  twitter.com/theanine3D
+//  www.theanine3d.com
+//
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 -->
@@ -151,7 +155,7 @@
         <!-- Main app window content START-->
         <div class="row petInfo">
             <div class="column petThumbnail">
-                <img src="assets/pets/default.png" id="petThumbnailImg">
+                <img src="assets/pets/thumbnails/default.png" id="petThumbnailImg">
             </div>
             <div class="col petStats">
                 <p>
@@ -234,7 +238,8 @@
             petFeedCount: 0,
             petBirthDay: currentDate,
             lastFeedDate: currentDate,
-            petSpecies: 0
+            petSpecies: 0,
+            petColor: 0
         };
 
         var petMood = 0;
@@ -243,15 +248,30 @@
         function updatePetPresets(updatedPetPresets) {
             LIST_SPECIES = JSON.parse(updatedPetPresets);
             LIST_SPECIES = LIST_SPECIES.speciesList;
-            console.log("Updated presets to:" + JSON.stringify(LIST_SPECIES));
-            if (LIST_SPECIES_THUMBNAILS[0] === undefined) {
+            console.log("Updated pet presets to:" + JSON.stringify(LIST_SPECIES));
 
-                for (let i of LIST_SPECIES) {
-                    var thumbnailURL = "assets/pets/" + i + ".png";
-                    LIST_SPECIES_THUMBNAILS.push(thumbnailURL);
+            // check if thumbnail list array hasn't been populated yet
+            if (LIST_SPECIES_THUMBNAILS[0] === undefined) {
+                // if they haven't, start populating the thumbnail list array
+                for (var i = 0; i < LIST_SPECIES.length; i++) {
+                    LIST_SPECIES_THUMBNAILS[i] = [];
+                    for (var j = 0; j < 10; j++) {
+                        var thumbnailURL = "assets/pets/thumbnails/" + (LIST_SPECIES[pet.petSpecies]) + j + ".png";
+                        LIST_SPECIES_THUMBNAILS[i].push(thumbnailURL);
+                    }
+                }
+
+                // preload the images
+                var cachedImages = [];
+                for (var i = 0; i < LIST_SPECIES_THUMBNAILS.length; i++) {
+                    for (var j = 0; j < LIST_SPECIES_THUMBNAILS[length - 1]; j++) {
+                        cachedImages[i][j] = new Image();
+                        cachedImages[i][j].src = LIST_SPECIES_THUMBNAILS[i][j];
+                    }
                 }
             }
         }
+
 
         function updatePetData(updatedPet) {
             pet = JSON.parse(updatedPet);
@@ -259,7 +279,7 @@
             // set pet name, species, and thumbnail image
             document.getElementById("petName").innerHTML = pet.petName;
             document.getElementById("petSpecies").innerHTML = LIST_SPECIES[pet.petSpecies];
-            document.getElementById("petThumbnailImg").src = LIST_SPECIES_THUMBNAILS[pet.petSpecies];
+            document.getElementById("petThumbnailImg").src = LIST_SPECIES_THUMBNAILS[pet.petSpecies][Math.floor(pet.petColor * 10)];
 
             // calculate pet age
             pet.petBirthDay = new Date(pet.petBirthDay);
@@ -317,9 +337,6 @@
         // Send an event to pets.js when the page loads and is ready to get things rolling
         console.log("App webpage is ready");
         EventBridge.emitWebEvent("ready");
-
-        // Send an event when user click on each of the action buttons
-        // PLACEHOLDER
 
         //LISTENER for JS file:
         EventBridge.scriptEventReceived.connect(function (message) {
