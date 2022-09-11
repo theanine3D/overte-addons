@@ -31,7 +31,10 @@
 
     // PET VARIABLES
 
-    var petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName };
+    var petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName, velocity: MyAvatar.velocity };
+
+
+
     var pet = {
         petName: "",
         petFeedCount: 0,
@@ -41,21 +44,34 @@
         petColor: 0
     };
     var currentDate = new Date();
-    var followState = true;
 
-    // CREATE BASIC 3D PET ENTITY
+    var petColorTexture = Script.resolvePath(".") + "assets/pets/colors.png";
+    var petRoughnessTexture = Script.resolvePath(".") + "assets/pets/r_50.png";
+    var petMetallicTexture = Script.resolvePath(".") + "assets/pets/r_0.png";
+
+    // Pet Cleanup - remove any unparented pets that may have been left since last run
+    function cleanupPets() {
+        var unclearedPetList = Entities.findEntitiesByName("pet_" + petOwner.name + "_" + pet.petName, MyAvatar.position, 1000, false);
+        for (var i = 0; i <= (unclearedPetList.length - 1); i++) {
+            // if (Entities.isChildOfParent(i, petOwner)) {
+            Entities.deleteEntity(i);
+            // }
+        }
+
+        var unclearedPetMatList = Entities.findEntitiesByName("petColors_" + petOwner.name + "_" + pet.petName, MyAvatar.position, 1000, false);
+        for (var i = 0; i <= (unclearedPetList.length - 1); i++) {
+            // if (Entities.isChildOfParent(i, petOwner)) {
+            Entities.deleteEntity(i);
+            // }
+        }
+    }
+    cleanupPets();
+
+
+    // CREATE PET MODEL ENTITY
     var petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
     Entities.editEntity(petEntityID, {
         "modelURL": Script.resolvePath(".") + "assets/pets/Egg.fbx",
-        "animation": {
-            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
-            "allowTranslation": false,
-            "fps": 24,
-            "currentFrame": 8.702019691467285,
-            "running": true,
-            "firstFrame": 1,
-            "lastFrame": 23
-        },
         "rotation": { x: 0, y: 0, z: 0 }
     });
 
@@ -79,30 +95,123 @@
         });
     }, 200);
 
+    Entities.editEntity(petEntityID, {
+        "rotation": { x: 0, y: 0, z: 0 }
+    });
+
+    // ADD PET MATERIAL ENTITY
+    var petMatEntityID = Entities.addEntity(
+        {
+            "type": "Material",
+            "materialURL": "materialData",
+            "priority": 1,
+            "name": "petColors_" + petOwner.name + "_Egg",
+        }, "avatar");
+
+    function updatePetMat() {
+        Entities.editEntity(petMatEntityID,
+            {
+                "type": "Material",
+                "parentID": petEntityID,
+                "materialURL": "materialData",
+                "priority": 1,
+                "name": "petColors_" + petOwner.name + "_" + pet.petName,
+                "parentMaterialName": "mat::colors",
+                "materialMappingPos": {
+                    "x": pet.petColor,
+                    "y": 0.0
+                },
+                "materialData": JSON.stringify({
+                    "materialVersion": 1,
+                    "materials": [
+                        {
+                            "name": "colors",
+                            "model": "hifi_pbr",
+                            "albedoMap": petColorTexture,
+                            "roughnessMap": petRoughnessTexture,
+                            "metallicMap": petMetallicTexture
+                        }
+                    ]
+                })
+            });
+
+        // FAIRY SPECIFIC
+        if (pet.petSpecies === 0) {
+            Entities.editEntity(petMatEntityID, {
+                "materialData": JSON.stringify({
+                    "materialVersion": 1,
+                    "materials": [
+                        {
+                            "name": "colors",
+                            "model": "hifi_pbr",
+                            "albedoMap": petColorTexture,
+                            "roughnessMap": petRoughnessTexture,
+                            "metallicMap": petMetallicTexture,
+                            "unlit": true
+                        }
+                    ]
+                })
+            });
+        }
+
+        // BIRD SPECIFIC
+        // DRAGON SPECIFIC
+        // BAT SPECIFIC
+        // CHAO SPECIFIC
+        // MAG SPECIFIC
+
+    }
+
+    updatePetMat();
+
+
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
-    var LIST_SPECIES = ['Rice Ball', 'Fairy'];
+    var LIST_SPECIES = ['Fairy', 'Fairy'];
     var SPECIES = Array();
 
     var LIST_ANIMATIONS =
-        ['Neutral', 'Happy', 'Sad'];
+        ['idle'];
     var ANIMATIONS = Array();
 
-    LIST_ANIMATIONS.forEach(function (name) {
-        var animationURL = Script.resolvePath(".") + "assets/pets/" + name + ".fbx";
-        var resourceAnim = AnimationCache.prefetch(animationURL);
-        var animation = AnimationCache.getAnimation(animationURL);
-        ANIMATIONS[name] = { name: name, url: animationURL, resource: resourceAnim, animation: animation };
-    });
+    // THIS IS USED TO PREFETCH/CACHE ALL PET ANIMATIONS FOR FASTER LOADING LATER
+    for (var i = 0; i <= (LIST_ANIMATIONS.length - 1); i++) {
+
+        for (var j = 0; j <= (LIST_SPECIES.length - 1); j++) {
+            var animationURL = Script.resolvePath(".") + "assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + ".fbx";
+            var resourceAnim = AnimationCache.prefetch(animationURL);
+            var animation = AnimationCache.getAnimation(animationURL);
+            ANIMATIONS[j] = { name: LIST_ANIMATIONS[i], url: animationURL, resource: resourceAnim, animation: animation };
+        }
+    }
 
     LIST_SPECIES.forEach(function (name) {
         var speciesURL = Script.resolvePath("assets/pets/") + name + ".fbx";
         var thumbnailURL = Script.resolvePath("assets/pets/" + name + ".png");
-        // var resourceSpecies = ModelCache.prefetch(speciesURL);
-        // var resourceSpeciesTextures = TextureCache.prefetch(speciesURL);
-        // var resourceSpeciesThumb = TextureCache.prefetch(thumbnailURL);
+        var thumbnailCached = TextureCache.prefetch(thumbnailURL);
         SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL };
-        // SPECIES[name] = { name: name, url: speciesURL, thumbnailURL: thumbnailURL, resourceSpecies: resourceSpecies, resourceSpeciesThumb: resourceSpeciesThumb };
     });
+
+
+    // Start listener for player's speed, for adjusting pet animation speed
+    Script.update.connect(constantLoop);
+
+    function constantLoop(deltaTime) {
+        petOwner.velocity = MyAvatar.velocity;
+        if (petOwner.velocity.x > 0 || petOwner.velocity.y > 0 || petOwner.velocity.z > 0) {
+            Entities.editEntity(petEntityID, {
+                "animation": {
+                    fps: 60
+                }
+            });
+        }
+        else {
+            Entities.editEntity(petEntityID, {
+                "animation": {
+                    fps: 30
+                }
+            });
+        }
+    }
 
 
     function onClicked() {
@@ -127,7 +236,6 @@
             "speciesList": LIST_SPECIES
         };
         tablet.emitScriptEvent(JSON.stringify(petPresetList));
-        // print("Sent pet presets to tablet.")
     }
 
     function updatePets() {
@@ -152,7 +260,7 @@
                 petBirthDay: currentDate,
                 lastFeedDate: currentDate,
                 petSpecies: (Math.floor(Math.random() * ((LIST_SPECIES.length - 1) - 0 + 1) + 0)),
-                petColor: Math.random()
+                petColor: Math.floor(Math.random() * 10) * .1
             };
 
             Entities.editEntity(petEntityID, {
@@ -161,17 +269,15 @@
 
             Entities.editEntity(petEntityID, {
                 "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
-                "animation": {
-                    "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
-                    "allowTranslation": false,
-                    "fps": 24,
-                    "currentFrame": 8.702019691467285,
-                    "running": true,
-                    "firstFrame": 1,
-                    "lastFrame": 23
-                },
                 "visible": false,
-                "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 })
+                "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
+                "animation": {
+                    url: ANIMATIONS[pet.petSpecies].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
             });
 
             Script.setTimeout(function () {
@@ -181,15 +287,25 @@
                 });
             }, 200);
 
+            // update pet material
+            Entities.editEntity(petMatEntityID, {
+                "materialMappingPos": { x: pet.petColor, y: 0 },
+                "parentMaterialName": "mat::colors",
+                "parentID": petEntityID,
+            });
+            updatePetMat();
+
+
             tablet.emitScriptEvent("unlock buttons");
 
         }
 
-        // update some stats
-
-
+        // update these stats, no matter what
         Entities.editEntity(petEntityID, {
             "name": "pet_" + petOwner.name + "_" + pet.petName,
+        });
+        Entities.editEntity(petMatEntityID, {
+            "name": "petColors_" + petOwner.name + "_" + pet.petName,
         });
 
         tablet.emitScriptEvent(JSON.stringify(pet));
@@ -261,44 +377,64 @@
                 Entities.editEntity(petEntityID, {
                     "name": "pet_" + petOwner.name + "_" + pet.petName
                 });
+                Entities.editEntity(petMatEntityID, {
+                    "name": "petColors_" + petOwner.name + "_" + pet.petName,
+                });
 
                 updatePets();
             }
             // END RENAME
 
+
             // if RESPAWN button was pressed....
             if (message === "respawn") {
 
-                // check if pet model entity doesn't exist. if it doesn't, recreate it
-                if (Entities.isAddedEntity(petEntityID) === false) {
-                    petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
-                    Entities.editEntity(petEntityID, {
-                        "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
-                        "animation": {
-                            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
-                            "allowTranslation": false,
-                            "fps": 24,
-                            "currentFrame": 8.702019691467285,
-                            "running": true,
-                            "firstFrame": 1,
-                            "lastFrame": 23
-                        },
-                        "rotation": { x: 0, y: 0, z: 0 },
-                        "visible": false
-                    });
+                cleanupPets();
+                Entities.deleteEntity(petEntityID);
+                Entities.deleteEntity(petMatEntityID);
 
+                petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
+                Entities.editEntity(petEntityID, {
+                    "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
+                    "rotation": { x: 0, y: 0, z: 0 },
+                    "visible": false,
+                    "animation": {
+                        url: ANIMATIONS[pet.petSpecies].url,
+                        firstFrame: 1,
+                        lastFrame: ANIMATIONS[pet.petSpecies].animation.frames.length - 1,
+                        loop: true,
+                        running: true
+                    }
+                });
+
+                Entities.editEntity(petEntityID, {
+                    "parentID": petOwner.uuid,
+                    "name": "pet_" + petOwner.name + "_" + pet.petName,
+                    "visible": false
+                });
+
+                Script.setTimeout(function () {
                     Entities.editEntity(petEntityID, {
-                        "parentID": petOwner.uuid,
-                        "name": "pet_" + petOwner.name + "_" + pet.petName,
-                        "visible": false
+                        "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+                        "visible": true
                     });
-                    Script.setTimeout(function () {
-                        Entities.editEntity(petEntityID, {
-                            "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
-                            "visible": true
-                        });
-                    }, 200);
-                }
+                }, 200);
+
+                petMatEntityID = Entities.addEntity(
+                    {
+                        "type": "Material",
+                        "parentID": petEntityID,
+                        "materialURL": "materialData",
+                        "priority": 1,
+                        "name": "petColors_" + petOwner.name + "_" + pet.petName,
+                        "parentMaterialName": "mat::colors",
+                        "materialMappingPos": {
+                            "x": pet.petColor,
+                            "y": 0.0
+                        }
+                    }, "avatar");
+
+                updatePetMat();
 
                 Entities.editEntity(petEntityID, {
                     "localPosition": {
@@ -333,23 +469,15 @@
                         petBirthDay: new Date(),
                         lastFeedDate: new Date(),
                         petSpecies: 0,
-                        petColor: 0
+                        petColor: Math.floor(Math.random() * 10) * .1
                     };
 
+                    Entities.deleteEntity(petMatEntityID);
                     Entities.deleteEntity(petEntityID);
 
                     petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
                     Entities.editEntity(petEntityID, {
                         "modelURL": Script.resolvePath(".") + "assets/pets/Egg.fbx",
-                        "animation": {
-                            "url": "https://puu.sh/JjS5i/e6b62c5ed8.glb",
-                            "allowTranslation": false,
-                            "fps": 24,
-                            "currentFrame": 8.702019691467285,
-                            "running": true,
-                            "firstFrame": 1,
-                            "lastFrame": 23
-                        },
                         "rotation": { x: 0, y: 0, z: 0 }
                     });
 
@@ -373,7 +501,21 @@
                         });
                     }, 200);
 
-                    updatePets();
+                    // ADD PET MATERIAL ENTITY
+                    petMatEntityID = Entities.addEntity(
+                        {
+                            "type": "Material",
+                            "parentID": petEntityID,
+                            "materialURL": "materialData",
+                            "priority": 1,
+                            "name": "petColors_" + petOwner.name + "_" + pet.petName,
+                            "parentMaterialName": "mat::colors",
+                            "materialMappingPos": {
+                                "x": pet.petColor,
+                                "y": 0.0
+                            },
+                        }, "avatar");
+                    updatePetMat();
                 }
                 else {
                     Window.alert("Your pet is grateful.");
@@ -381,8 +523,6 @@
                 updatePets();
             }
             // END ABANDON
-
-
 
         }
 
@@ -399,6 +539,7 @@
         } else {
             appStatus = false;
             updatePets();
+            updatePetMat();
             tablet.closeDialog();
         }
 
@@ -415,7 +556,8 @@
         }
 
         tablet.screenChanged.disconnect(onScreenChanged);
-        Entities.deleteEntity(petEntityID);
+        Script.update.disconnect(constantLoop);
+
         tablet.removeButton(button);
         tablet.closeDialog();
     }
