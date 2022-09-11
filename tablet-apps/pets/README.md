@@ -1,5 +1,6 @@
-Create a 3D pet that follows and accompanies you throughout your virtual reality life!
+This is a tablet app for the Overte social VR platform that allows you to create a 3D pet that follows and accompanies you. Each pet is fully animated, and its colors are randomly generated when the pet is created.
 
+If you don't like your pet's randomly selected colors, simply create a new pet until you get one you like.
 
 
 **KNOWN BUGS:** 
