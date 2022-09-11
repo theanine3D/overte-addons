@@ -6,11 +6,11 @@ This is a tablet app for the [Overte](https://overte.org/) social VR platform th
 
 If you don't like your pet's randomly selected colors, simply create a new pet until you get one you like.
 
-**INSTALLATION:** 
+###### INSTALLATION
 In Overte, go into the Edit-> Running Scripts menu, and press the "From URL" button. Then enter the following URL:
 https://github.com/theanine3D/overte-addons/raw/main/pets/pets.js
 
 This will load the script directly from GitHub, with all of the latest updates, and no other manual download needed.
 
-**KNOWN BUGS:** 
+###### KNOWN BUGS:
 - If you manually delete any of the model or materal entities created by this app, you may encounter glitches with duplicate "ghost" models. The ghost models usually disappear after a server restart, though.
