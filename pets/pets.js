@@ -33,8 +33,6 @@
 
     var petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName, velocity: MyAvatar.velocity };
 
-
-
     var pet = {
         petName: "",
         petFeedCount: 0,
@@ -167,21 +165,25 @@
 
 
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
-    var LIST_SPECIES = ['Fairy', 'Bird'];
+    var LIST_SPECIES = ['Fairy', 'Bird', 'Dragon'];
     var SPECIES = Array();
 
-    var LIST_ANIMATIONS =
-        ['idle'];
+    var LIST_MOODS = ["Neutral", "Happy", "Sad", "Angry"];
+
+    var LIST_ANIMATIONS = ['idle'];
     var ANIMATIONS = Array();
 
     // THIS IS USED TO PREFETCH/CACHE ALL PET ANIMATIONS FOR FASTER LOADING LATER
-    for (var i = 0; i <= (LIST_ANIMATIONS.length - 1); i++) {
-
-        for (var j = 0; j < LIST_SPECIES.length; j++) {
-            var animationURL = Script.resolvePath(".") + "assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + ".fbx";
-            var resourceAnim = AnimationCache.prefetch(animationURL);
-            var animation = AnimationCache.getAnimation(animationURL);
-            ANIMATIONS[j] = { name: LIST_ANIMATIONS[i], url: animationURL, resource: resourceAnim, animation: animation };
+    for (var j = 0; j < LIST_SPECIES.length; j++) {
+        ANIMATIONS[j] = Array();
+        for (var k = 0; k < LIST_MOODS.length; k++) {
+            ANIMATIONS[j][k] = Array();
+            for (var i = 0; i < LIST_ANIMATIONS.length; i++) {
+                var animationURL = Script.resolvePath(".") + "assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + LIST_MOODS[k] + ".fbx";
+                var resourceAnim = AnimationCache.prefetch(animationURL);
+                var animation = AnimationCache.getAnimation(animationURL);
+                ANIMATIONS[j][k] = { name: LIST_ANIMATIONS[i], url: animationURL, resource: resourceAnim, animation: animation };
+            }
         }
     }
 
@@ -245,19 +247,37 @@
         if (petMood >= 2) {
             // if more than 2 days have passed since last feed date
             Entities.editEntity(petEntityID, {
-                "blendshapeCoefficients": "{happy:0, angry:1, sad:0}"
+                "animation": {
+                    url: ANIMATIONS[pet.petSpecies][2].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][2].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
             });
         }
         else if (petMood < 2 && petMood > 1) {
             // if pet has been fed in the previous day
             Entities.editEntity(petEntityID, {
-                "blendshapeCoefficients": "{happy:0, angry:0, sad:1}"
+                "animation": {
+                    url: ANIMATIONS[pet.petSpecies][1].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][1].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
             });
         }
         else if (petMood <= 1) {
             // if pet has been fed within the last 24 hours
             Entities.editEntity(petEntityID, {
-                "blendshapeCoefficients": "{happy:0, angry:0, sad:0}"
+                "animation": {
+                    url: ANIMATIONS[pet.petSpecies][0].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][0].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
             });
         }
     }
@@ -296,9 +316,9 @@
                 "visible": false,
                 "localRotation": Quat.fromVec3Degrees({ x: 0, y: 180, z: 0 }),
                 "animation": {
-                    url: ANIMATIONS[pet.petSpecies].url,
+                    url: ANIMATIONS[pet.petSpecies][0].url,
                     firstFrame: 1,
-                    lastFrame: ANIMATIONS[pet.petSpecies].animation.frames.length - 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][0].animation.frames.length - 1,
                     loop: true,
                     running: true
                 }
@@ -349,11 +369,31 @@
             pet.lastFeedDate = new Date();
             pet.petFeedCount += 1;
 
-            updatePetMood();
-
             Window.alert("Yummy! ${pet.petName} appreciates you!");
             updatePets();
         }
+
+        // make pet smile briefly
+        Entities.editEntity(petEntityID, {
+            "animation": {
+                url: ANIMATIONS[pet.petSpecies][1].url,
+                firstFrame: 1,
+                lastFrame: ANIMATIONS[pet.petSpecies][1].animation.frames.length - 1,
+                loop: true,
+                running: true
+            }
+        });
+        Script.setTimeout(function () {
+            Entities.editEntity(petEntityID, {
+                "animation": {
+                    url: ANIMATIONS[pet.petSpecies][0].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][0].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
+            });
+        }, 2000);
     }
 
 
@@ -373,9 +413,9 @@
             if (message === "ready") {
                 print("Pets app is ready.");
 
-                updatePets();
-
                 updatePetPresets();
+
+                updatePets();
 
 
             }
@@ -400,7 +440,7 @@
             if (message === "rename") {
                 var newPetName = "";
                 while (newPetName === "" || newPetName === null) { // check if user actually entered any name
-                    newPetName = Window.prompt("Please enter the name of your new pet:", "PET NAME");
+                    newPetName = Window.prompt("Please enter the name of your new pet:", pet.petName);
                 }
                 pet.petName = newPetName;
                 Entities.editEntity(petEntityID, {
@@ -428,9 +468,9 @@
                     "rotation": { x: 0, y: 0, z: 0 },
                     "visible": false,
                     "animation": {
-                        url: ANIMATIONS[pet.petSpecies].url,
+                        url: ANIMATIONS[pet.petSpecies][0].url,
                         firstFrame: 1,
-                        lastFrame: ANIMATIONS[pet.petSpecies].animation.frames.length - 1,
+                        lastFrame: ANIMATIONS[pet.petSpecies][0].animation.frames.length - 1,
                         loop: true,
                         running: true
                     }
