@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 //  PetsApp.html
 //
 //  Created by Pedro Valencia / Theanine3D on September 4, 2022
@@ -231,7 +231,6 @@
 
         // Pet Data
         var LIST_SPECIES = [];
-        var LIST_SPECIES_THUMBNAILS = [];
 
         var pet = {
             petName: "",
@@ -249,19 +248,6 @@
             LIST_SPECIES = JSON.parse(updatedPetPresets);
             LIST_SPECIES = LIST_SPECIES.speciesList;
             console.log("Updated pet presets to:" + JSON.stringify(LIST_SPECIES));
-
-            // check if thumbnail list array hasn't been populated yet
-            if (LIST_SPECIES_THUMBNAILS[0] === undefined) {
-                // if they haven't, start populating the thumbnail list array
-                LIST_SPECIES.forEach(function (i) {
-                    LIST_SPECIES_THUMBNAILS[LIST_SPECIES.indexOf(i)] = [];
-
-                    for (var j = 0; j < 10; j++) {
-                        var thumbnailURL = "assets/pets/thumbnails/" + (LIST_SPECIES[LIST_SPECIES.indexOf(i)]) + j + ".png";
-                        LIST_SPECIES_THUMBNAILS[LIST_SPECIES.indexOf(i)].push(thumbnailURL);
-                    }
-                });
-            }
         }
 
 
@@ -271,7 +257,8 @@
             // set pet name, species, and thumbnail image
             document.getElementById("petName").innerHTML = pet.petName;
             document.getElementById("petSpecies").innerHTML = LIST_SPECIES[pet.petSpecies];
-            document.getElementById("petThumbnailImg").src = LIST_SPECIES_THUMBNAILS[pet.petSpecies][Math.floor(pet.petColor * 10)];
+            var petColorVariety = Math.floor(pet.petColor * 10);
+            document.getElementById("petThumbnailImg").src = "assets/pets/thumbnails/" + LIST_SPECIES[pet.petSpecies] + petColorVariety + ".png";
 
             // calculate pet age
             pet.petBirthDay = new Date(pet.petBirthDay);
