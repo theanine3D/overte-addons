@@ -14,3 +14,4 @@ This will load the script directly from GitHub, with all of the latest updates, 
 
 ###### KNOWN BUGS:
 - If you manually delete any of the model or materal entities created by this app, you may encounter glitches with duplicate "ghost" models. The ghost models usually disappear after a server restart, though.
+- The Nametag button is supposed to toggle the pet's nametag visibility, but for some reason, it will only hide (not show) the nametag. To bring the nametag back, press the Respawn button instead.
