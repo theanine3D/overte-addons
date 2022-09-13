@@ -11,13 +11,13 @@
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
 (function () {
-    var jsMainFileName = "pets.js"; // <=== REPLACE VALUE (File name of this current .js file)
+    var jsMainFileName = "pets.js";
     var ROOT = Script.resolvePath('').split(jsMainFileName)[0];
 
-    var APP_NAME = "PETS"; // <=== REPLACE VALUE (Caption of the Tablet button.)
-    var APP_URL = ROOT + "PetsApp.html"; // <=== REPLACE VALUE (html page that will be your UI)
-    var APP_ICON_INACTIVE = ROOT + "pets-i.svg"; // <=== REPLACE VALUE (Provide a 50 X 50 pixels, .png or .svg file, WHITE on transparent background)
-    var APP_ICON_ACTIVE = ROOT + "pets-a.svg"; // <=== REPLACE VALUE  (Provide a 50 X 50 pixels, .png or .svg file, BLACK on transparent background)
+    var APP_NAME = "PETS";
+    var APP_URL = ROOT + "PetsApp.html";
+    var APP_ICON_INACTIVE = ROOT + "pets-i.svg";
+    var APP_ICON_ACTIVE = ROOT + "pets-a.svg";
     var appStatus = false;
 
 
@@ -33,6 +33,16 @@
 
     var petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName, velocity: MyAvatar.velocity };
 
+    // Create backup/fallback pet settings just in case
+    var petDefault = {
+        petName: "Egg",
+        petFeedCount: 0,
+        petBirthDay: new Date(),
+        lastFeedDate: new Date(),
+        petSpecies: 0,
+        petColor: Math.floor(Math.random() * 10) * .1
+    };
+
     var pet = {
         petName: "Egg",
         petFeedCount: 0,
@@ -41,6 +51,13 @@
         petSpecies: 0,
         petColor: 0
     };
+
+    // Check if there's saved data, and if so, load it
+    if (Settings.getValue("pet") != 0 || Settings.getValue("pet").petName != undefined) {
+        pet = Settings.getValue("pet");
+    }
+    else { Settings.setValue("pet", pet); }
+
     var currentDate = new Date();
 
     var petColorTexture = Script.resolvePath(".") + "assets/pets/colors.png";
@@ -79,23 +96,44 @@
         }
     });
 
-
     // Pet Cleanup - remove any unparented pets that may have been left since last run
     function cleanupPets() {
-        var unclearedPetList = Entities.findEntitiesByName("pet_" + petOwner.name + "_" + pet.petName, MyAvatar.position, 1000, false);
-        for (var i = 0; i <= (unclearedPetList.length - 1); i++) {
-            // if (Entities.isChildOfParent(i, petOwner)) {
-            Entities.deleteEntity(i);
-            // }
+        var unclearedPetMatList = Entities.findEntitiesByType("Material", MyAvatar.position, 1000, true);
+        for (var i = 0; i < unclearedPetMatList.length; i++) {
+            if (Entities.getEntityProperties(unclearedPetMatList[i]).name.indexOf("petColors_" + MyAvatar.displayName) != -1) {
+                Entities.editEntity(unclearedPetMatList[i], {
+                    "materials": null,
+                    "parentID": null,
+                    "visible": false
+                });
+                Entities.deleteEntity(unclearedPetMatList[i]);
+            }
         }
 
-        var unclearedPetMatList = Entities.findEntitiesByName("petColors_" + petOwner.name + "_" + pet.petName, MyAvatar.position, 1000, false);
-        for (var i = 0; i <= (unclearedPetList.length - 1); i++) {
-            // if (Entities.isChildOfParent(i, petOwner)) {
-            Entities.deleteEntity(i);
-            // }
+        var unclearedPetNametagList = Entities.findEntitiesByType("Text", MyAvatar.position, 1000, true);
+        for (var j = 0; j < unclearedPetNametagList.length; j++) {
+            if (Entities.getEntityProperties(unclearedPetNametagList[j]).name.indexOf("petNametag_" + MyAvatar.displayName) != -1) {
+                Entities.editEntity(unclearedPetNametagList[j], {
+                    "text": "",
+                    "visible": false
+                });
+                Entities.deleteEntity(unclearedPetNametagList[j]);
+            }
+        }
+
+        var unclearedPetList = Entities.findEntitiesByType("Model", MyAvatar.position, 1000, true);
+        for (var k = 0; k < unclearedPetList.length; k++) {
+            if (Entities.getEntityProperties(unclearedPetList[k]).name.indexOf("pet_" + MyAvatar.displayName) != -1) {
+                Entities.editEntity(unclearedPetList[k], {
+                    "modelURL": "",
+                    "visible": false
+                });
+                Entities.deleteEntity(unclearedPetList[k]);
+            }
         }
     }
+
+    cleanupPets();
 
     // CREATE PET ENTITY VARIABLES
     var petEntityID = null;
@@ -128,38 +166,12 @@
                             "albedoMap": petColorTexture,
                             "roughnessMap": petRoughnessTexture,
                             "metallicMap": petMetallicTexture,
-                            "unlit": false
                         }
                     ]
                 })
             });
-
-        // FAIRY SPECIFIC
-        if (pet.petSpecies === 0) {
-            Entities.editEntity(petMatEntityID, {
-                "materialData": JSON.stringify({
-                    "materialVersion": 1,
-                    "materials": [
-                        {
-                            "name": "colors",
-                            "model": "hifi_pbr",
-                            "albedoMap": petColorTexture,
-                            "roughnessMap": petRoughnessTexture,
-                            "metallicMap": petMetallicTexture,
-                            "unlit": true
-                        }
-                    ]
-                })
-            });
-        }
-
-        // BIRD SPECIFIC
-        // DRAGON SPECIFIC
-        // BAT SPECIFIC
-        // CHAO SPECIFIC
-        // MAG SPECIFIC
-
     }
+
 
     function updateNameTag(toggleHide) {
 
@@ -260,6 +272,41 @@
         }
     }
 
+    function modifyBySpecies() {
+
+        // This function is used to make species-specific modifications to the pet, nametag, and/or material entity.
+        // Note that the "materials" property needs to be set in full. You can't just change one subproperty inside "materials." All subproperties of "materials" need to be set.
+
+        // FAIRY SPECIFIC MODIFICATIONS
+        if (pet.petSpecies === 0) {
+
+            Entities.editEntity(petMatEntityID, {
+                "materialData": JSON.stringify({
+                    "materialVersion": 1,
+                    "materials": [
+                        {
+                            "name": "colors",
+                            "model": "hifi_pbr",
+                            "albedoMap": petColorTexture,
+                            "roughnessMap": petRoughnessTexture,
+                            "metallicMap": petMetallicTexture,
+                            "unlit": true
+                        }
+                    ]
+                })
+            });
+
+            Entities.editEntity(petNametagEntityID, {
+                "localPosition": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0.6
+                }
+            });
+        }
+
+    }
+
     function setupPet(respawning) {
 
         petOwner = { uuid: MyAvatar.sessionUUID, name: MyAvatar.displayName };
@@ -335,9 +382,14 @@
         while (Entities.isLoaded(petEntityID) === false) {
             Entities.editEntity(petEntityID, {
                 "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
-                "visible": true
+                "visible": false
             });
         }
+
+        Entities.editEntity(petEntityID, {
+            "dimensions": Entities.getEntityProperties(petEntityID).naturalDimensions,
+            "visible": true
+        });
 
         // ADD PET MATERIAL ENTITY
         petMatEntityID = Entities.addEntity(
@@ -362,28 +414,8 @@
         updateNameTag(false);
     }
 
-    // Start listener for player's speed, for adjusting pet animation speed
-    Script.update.connect(constantLoop);
-
-    function constantLoop(deltaTime) {
-        petOwner.velocity = MyAvatar.velocity;
-        if (petOwner.velocity.x > 0 || petOwner.velocity.y > 0 || petOwner.velocity.z > 0) {
-            Entities.editEntity(petEntityID, {
-                "animation": {
-                    fps: 60
-                }
-            });
-        }
-        else {
-            Entities.editEntity(petEntityID, {
-                "animation": {
-                    fps: 30
-                }
-            });
-        }
-    }
-
     function updatePet() {
+
 
         if (pet.petName === 'Egg' || pet.petName === "") {
 
@@ -404,8 +436,8 @@
             pet = {
                 petName: newPetName,
                 petFeedCount: 0,
-                petBirthDay: currentDate,
-                lastFeedDate: currentDate,
+                petBirthDay: new Date(),
+                lastFeedDate: new Date(),
                 petSpecies: (Math.floor(Math.random() * ((LIST_SPECIES.length - 1) - 0 + 1) + 0)),
                 petColor: Math.floor(Math.random() * 10) * .1
             };
@@ -415,6 +447,14 @@
             tablet.emitScriptEvent("unlock buttons");
         }
 
+        else {
+            // Check if there's saved data, and if so, respawn the entity based on the existing pet data
+            if (Settings.getValue("pet") != 0 || Settings.getValue("pet").petName != undefined) {
+                setupPet(true);
+            }
+        }
+
+
         // update these stats, no matter what
         Entities.editEntity(petEntityID, {
             "name": "pet_" + petOwner.name + "_" + pet.petName,
@@ -423,9 +463,34 @@
             "name": "petColors_" + petOwner.name + "_" + pet.petName,
         });
 
-        tablet.emitScriptEvent(JSON.stringify(pet));
-        // print("Sent pet data to tablet.")
+        // Save data permanently to software settings
+        Settings.setValue("pet", pet);
 
+        // PERFORM SPECIES-SPECIFIC EDITS
+        modifyBySpecies();
+
+        tablet.emitScriptEvent(JSON.stringify(pet));
+    }
+
+    // Start listener for player's speed, for adjusting pet animation speed
+    Script.update.connect(constantLoop);
+
+    function constantLoop(deltaTime) {
+        petOwner.velocity = MyAvatar.velocity;
+        if (petOwner.velocity.x > 0 || petOwner.velocity.y > 0 || petOwner.velocity.z > 0) {
+            Entities.editEntity(petEntityID, {
+                "animation": {
+                    fps: 60
+                }
+            });
+        }
+        else {
+            Entities.editEntity(petEntityID, {
+                "animation": {
+                    fps: 30
+                }
+            });
+        }
     }
 
     // Feed button
@@ -475,17 +540,7 @@
         });
     }
 
-
-
     function onWebEventReceived(message) {
-        //Here you can react to the different attributes of the object recieved from the HTML UI
-        /*
-        if(eventObj.attribute === "installScript"){
-     
-            //We could reply using: 
-            //tablet.emitScriptEvent(JSON.stringify(anyJSONObject));
-        }
-        */
 
         if (typeof message === "string") {
 
@@ -494,9 +549,7 @@
                 print("Pets app is ready.");
 
                 updatePetPresets();
-
                 updatePet();
-
 
             }
 
@@ -525,6 +578,9 @@
                 var newPetName = "";
                 while (newPetName === "" || newPetName === null) { // check if user actually entered any name
                     newPetName = Window.prompt("Please enter the name of your new pet:", pet.petName);
+                    while (newPetName === "Egg") {
+                        newPetName = Window.prompt("That name is not allowed! Pick a different name.", "New");
+                    }
                 }
                 pet.petName = newPetName;
                 Entities.editEntity(petEntityID, {
@@ -546,10 +602,8 @@
             // if RESPAWN button was pressed....
             if (message === "respawn") {
 
-                cleanupPets();
                 setupPet(true);
                 updatePet();
-
             }
             // END RESPAWN
 
@@ -582,14 +636,14 @@
     function onScreenChanged(type, url) {
         if (type === "Web" && url.indexOf(APP_URL) !== -1) {
             appStatus = true;
-            //Here we know that the HTML UI is loaded.
-            //We could communicate to it here as we know it is loaded. Using:
-            //tablet.emitScriptEvent(JSON.stringify(anyJSONObject));
+            // HTML UI is loaded.
+
+            updatePetMat();
+            modifyBySpecies();
 
         } else {
             appStatus = false;
-            updatePet();
-            updatePetMat();
+
             tablet.closeDialog();
         }
 
@@ -607,6 +661,7 @@
 
         tablet.screenChanged.disconnect(onScreenChanged);
         Script.update.disconnect(constantLoop);
+        cleanupPets();
 
         tablet.removeButton(button);
         tablet.closeDialog();
