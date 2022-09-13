@@ -186,6 +186,7 @@
                 <button class="btn btn-light btnAction" onclick="renameButton();">Rename</button>
             </p>
             <p style=" margin-bottom:0px;">
+                <button class="btn btn-light btnAction" onclick="nametagButton();">Hide Name</button>
                 <button class="btn btn-light btnAction" onclick="abandonButton();">Abandon</button>
             </p>
             <p><em><span id="statusMsg"></span></em></p>
@@ -311,6 +312,10 @@
 
         function abandonButton() {
             EventBridge.emitWebEvent("abandon");
+        }
+
+        function nametagButton() {
+            EventBridge.emitWebEvent("nametag");
         }
 
         // Send an event to pets.js when the page loads and is ready to get things rolling
