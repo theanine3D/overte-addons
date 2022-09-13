@@ -71,6 +71,18 @@
             display: block;
         }
 
+        #credits a {
+            color: white;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        #credits a:hover {
+            color: aquamarine;
+            font-weight: 400;
+            text-decoration: none;
+        }
+
         .petInfo {
             width: 100%;
             flex-direction: row;
@@ -190,7 +202,7 @@
                 <button class="btn btn-light btnAction" onclick="abandonButton();">Abandon</button>
             </p>
             <p><em><span id="statusMsg"></span></em></p>
-            <br /><em><span id="credits">app by @Theanine3D</span></em>
+            <br /><em><span id="credits">app by <a href="https://www.twitter.com/theanine3D">@Theanine3D</a></span></em>
 
         </div>
         <!-- Main app window content END-->
@@ -275,14 +287,14 @@
             petMood = Math.floor(Math.abs((currentDate.getTime() - pet.lastFeedDate.getTime()) / (1000 * 3600 * 24)));
 
             if (petMood >= 2) {
-                // if more than 2 days have passed since last feed date
+                // if more than 3 days have passed since last feed date
                 document.getElementById("petMoodHearts").innerHTML = "&#10084;";
             }
-            else if (petMood < 2 && petMood > 1) {
+            else if (petMood < 2 && petMood >= 1) {
                 // if pet has been fed in the previous day
                 document.getElementById("petMoodHearts").innerHTML = "&#10084;&#10084;";
             }
-            else if (petMood <= 1) {
+            else if (petMood < 1) {
                 // if pet has been fed within the last 24 hours
                 document.getElementById("petMoodHearts").innerHTML = "&#10084;&#10084;&#10084;";
             }
