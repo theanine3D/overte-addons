@@ -226,6 +226,18 @@
             // if more than 2 days have passed since last feed date
             Entities.editEntity(petEntityID, {
                 "animation": {
+                    url: ANIMATIONS[pet.petSpecies][3].url,
+                    firstFrame: 1,
+                    lastFrame: ANIMATIONS[pet.petSpecies][3].animation.frames.length - 1,
+                    loop: true,
+                    running: true
+                }
+            });
+        }
+        else if (petMood < 2 && petMood >= 1) {
+            // if pet has been fed in the previous day
+            Entities.editEntity(petEntityID, {
+                "animation": {
                     url: ANIMATIONS[pet.petSpecies][2].url,
                     firstFrame: 1,
                     lastFrame: ANIMATIONS[pet.petSpecies][2].animation.frames.length - 1,
@@ -234,19 +246,7 @@
                 }
             });
         }
-        else if (petMood < 2 && petMood > 1) {
-            // if pet has been fed in the previous day
-            Entities.editEntity(petEntityID, {
-                "animation": {
-                    url: ANIMATIONS[pet.petSpecies][1].url,
-                    firstFrame: 1,
-                    lastFrame: ANIMATIONS[pet.petSpecies][1].animation.frames.length - 1,
-                    loop: true,
-                    running: true
-                }
-            });
-        }
-        else if (petMood <= 1) {
+        else if (petMood < 1) {
             // if pet has been fed within the last 24 hours
             Entities.editEntity(petEntityID, {
                 "animation": {
@@ -274,6 +274,17 @@
                 petColor: Math.floor(Math.random() * 10) * .1
             };
         }
+
+        // TEST AREA, USED FOR TESTING LEVEL/MOOD EFFECTS. Press Respawn button to trigger the test values. Comment out the lines when not debugging
+        // pet = {
+        //     petName: "Test Subject",
+        //     petFeedCount: 88,
+        //     petBirthDay: new Date("September 4, 2022 03:24:00"),
+        //     lastFeedDate: new Date("September 1, 2022 00:00:00"),
+        //     petSpecies: 2,
+        //     petColor: .3
+        // };
+
         Entities.deleteEntity(petNametagEntityID);
         Entities.deleteEntity(petMatEntityID);
         Entities.deleteEntity(petEntityID);
@@ -343,6 +354,8 @@
                 },
             }, "avatar");
         updatePetMat();
+
+        updatePetMood();
 
         // ADD NEW NAMETAG ENTITY
         petNametagEntityID = Entities.addEntity(Script.require("./assets/pets/nametag.json"), "avatar");
@@ -441,15 +454,7 @@
             }
         });
         Script.setTimeout(function () {
-            Entities.editEntity(petEntityID, {
-                "animation": {
-                    url: ANIMATIONS[pet.petSpecies][0].url,
-                    firstFrame: 1,
-                    lastFrame: ANIMATIONS[pet.petSpecies][0].animation.frames.length - 1,
-                    loop: true,
-                    running: true
-                }
-            });
+            updatePetMood();
         }, 2000);
     }
 
