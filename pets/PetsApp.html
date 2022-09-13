@@ -301,9 +301,9 @@
 
             // Show status message on bottom of app, whenever data is updated
             // document.getElementById("statusMsg").innerHTML = "Updated pet data.";
-            setTimeout(function () {
-                document.getElementById("statusMsg").innerHTML = "";
-            }, 1500);
+            // setTimeout(function () {
+            //     document.getElementById("statusMsg").innerHTML = "";
+            // }, 1500);
         }
 
         function feedButton() {
@@ -357,6 +357,7 @@
             if (message.indexOf("petBirthDay") != -1 && message.indexOf("lastFeedDate") != -1) {
                 updatePetData(message);
             }
+
         });
 
 
