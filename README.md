@@ -17,8 +17,6 @@ If you don't like your pet's randomly selected colors, simply create a new pet u
 6) in Overte's Running Scripts menu, press "From Disk" and navigate to the new folder you just created. Pick the pets.js file.
 7) In the bottom of the screen you should now see a Pets button in your main toolbar. Press that to start the app.
 
-This will load the script directly from GitHub, with all of the latest updates, and no other manual download needed.
-
 ###### KNOWN BUGS:
 - The tablet window will sometimes not load the data in time, leading to inaccurate stats/info being shown on the screen. Just reopen the Pets app until it shows your pet's stats properly. If repeated re-opening still doesn't fix it, you can as a last resort **reset** your pet save data by using Abandon button. Note that this can't be undone.
 - The Nametag button is supposed to toggle the pet's nametag visibility, but for some reason, it will only hide (not show) the nametag. To bring the nametag back, press the Respawn button instead for now.
