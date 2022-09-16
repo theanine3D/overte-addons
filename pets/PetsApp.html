@@ -349,12 +349,12 @@
             }
 
             // check if received pet presets, and if true, update the HTML pet presets
-            if (message.indexOf("speciesList") != -1) {
+            if (message.indexOf("speciesList") !== -1) {
                 updatePetPresets(message);
             }
 
             // check if received pet data, and if true, update the HTML pet data
-            if (message.indexOf("petBirthDay") != -1 && message.indexOf("lastFeedDate") != -1) {
+            if (message.indexOf("petBirthDay") !== -1 && message.indexOf("lastFeedDate") !== -1) {
                 updatePetData(message);
             }
 
