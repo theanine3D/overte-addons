@@ -65,7 +65,7 @@
     var petMetallicTexture = Script.resolvePath(".") + "assets/pets/r_0.png";
 
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
-    var LIST_SPECIES = ['Fairy', 'Bird', 'Dragon'];
+    var LIST_SPECIES = ['Fairy', 'Bird', 'Dragon', 'Tux'];
     var SPECIES = Array();
 
     var LIST_MOODS = ["Neutral", "Happy", "Sad", "Angry"];
