@@ -10,14 +10,15 @@
 //  Distributed under the Apache License, Version 2.0.
 //  See the accompanying file LICENSE or http://www.apache.org/licenses/LICENSE-2.0.html
 //
+
 (function () {
-    var jsMainFileName = "pets.js"; // <=== REPLACE VALUE (File name of this current .js file)
+    var jsMainFileName = "pets.js";
     var ROOT = Script.resolvePath('').split(jsMainFileName)[0];
 
-    var APP_NAME = "PETS"; // <=== REPLACE VALUE (Caption of the Tablet button.)
-    var APP_URL = ROOT + "PetsApp.html"; // <=== REPLACE VALUE (html page that will be your UI)
-    var APP_ICON_INACTIVE = ROOT + "pets-i.svg"; // <=== REPLACE VALUE (Provide a 50 X 50 pixels, .png or .svg file, WHITE on transparent background)
-    var APP_ICON_ACTIVE = ROOT + "pets-a.svg"; // <=== REPLACE VALUE  (Provide a 50 X 50 pixels, .png or .svg file, BLACK on transparent background)
+    var APP_NAME = "PETS";
+    var APP_URL = ROOT + "PetsApp.html";
+    var APP_ICON_INACTIVE = ROOT + "pets-i.svg";
+    var APP_ICON_ACTIVE = ROOT + "pets-a.svg";
     var appStatus = false;
 
 
@@ -177,12 +178,9 @@
             });
         }
 
-        // BIRD SPECIFIC
-        // DRAGON SPECIFIC
-        // BAT SPECIFIC
-        // CHAO SPECIFIC
-        // MAG SPECIFIC
+        //  INSERT OTHER SPECIES-SPECIFIC FUNCTIONS BELOW
 
+        //
     }
 
     function updateNameTag(toggleHide) {
