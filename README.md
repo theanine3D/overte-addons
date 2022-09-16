@@ -1,7 +1,7 @@
 # overte-addons
 My personal collection of scripts, shaders, and addons for the open source social VR platform, [Overte](https://overte.org/).
 
-![Screenshot of Pets App](https://puu.sh/Jly8U/04a708aedb.png)
+![Screenshot of Pets app](https://puu.sh/Jlyaj/56759d0851.png)
 ## Pets
 This is a tablet app for the [Overte](https://overte.org/) social VR platform that allows you to create a 3D pet that follows and accompanies you. Each pet is animated, and its colors are randomly generated upon creation.
 
