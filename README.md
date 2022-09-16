@@ -15,5 +15,5 @@ https://github.com/theanine3D/overte-addons/raw/main/pets/pets.js
 This will load the script directly from GitHub, with all of the latest updates, and no other manual download needed.
 
 ###### KNOWN BUGS:
-- The tablet window will sometimes not load the data in time, leading to inaccurate stats/info being shown on the screen. Just reopen the Pets app until it shows your pet's stats properly. If for some reason this doesn't fix it, recreate your pet using the Abandon button. That'll reset your pet data.
+- The tablet window will sometimes not load the data in time, leading to inaccurate stats/info being shown on the screen. Just reopen the Pets app until it shows your pet's stats properly. If repeated re-opening still doesn't fix it, you can as a last resort **reset** your pet save data by using Abandon button. Note that this can't be undone.
 - The Nametag button is supposed to toggle the pet's nametag visibility, but for some reason, it will only hide (not show) the nametag. To bring the nametag back, press the Respawn button instead for now.
