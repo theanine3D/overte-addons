@@ -9,7 +9,7 @@ This is a tablet app for the [Overte](https://overte.org/) social VR platform th
 If you don't like your pet's randomly selected colors, simply create a new pet until you get one you like.
 
 ###### INSTALLATION
-1) Look for the latest release and download it from the [Releases](https://github.com/theanine3D/overte-addons/release) section.
+1) Look for the latest release and download it from the [Releases](https://github.com/theanine3D/overte-addons/releases) section.
 2) Download the ZIP.
 3) 4n Overte, go into the Edit-> Running Scripts menu, and press the "Reveal Scripts Folder" button
 4) Go into the communityScripts folder in the new window that pops up. Create a folder called "pets"
