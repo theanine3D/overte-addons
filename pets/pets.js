@@ -190,6 +190,21 @@
             "parentID": petEntityID,
             "visible": true,
             "text": pet.petName,
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": 0.0,
+                    "y": 0.0,
+                    "z": 0.0,
+                    "w": 1
+                }
+            },
             "dimensions": {
                 "x": 1.0246875286102295,
                 "y": 0.08865754306316376,
