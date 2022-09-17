@@ -23,9 +23,9 @@ If you don't like your pet's randomly selected colors, simply create a new pet u
 
 ###### CREATE YOUR OWN PET SPECIES:
 In order to add your own custom pets to the app, you will need to create the following for each new species:
-- 10 thumbnails (for the 10 different colors) in the assets/pets/thumbnails folder, with the following name format: SPECIES#.png
+- 10 thumbnails (for the 10 different colors) in the assets/pets/thumbnails folder, with the following name format (replacing # with 0-9): SPECIES#.png
   -  Replace SPECIES with your new pet's species, ie. Dog
 - A rigged 3D model in FBX format, without an animation, but should contain the armature/skeleton. Place this FBX in assets/pets/ and name it SPECIES.fbx (again, replace SPECIES with your new pet's species name)
-- 4 animations, one for each different mood (Neutral, Happy, Sad, Angry). Name them each "SPECIES anim idleMOOD.fbx" with the SPECIES keyword replaced with your new species name, and the MOOD keyword replaced with the corresponding mood. These are ALL case sensitive, so if in doubt, try to emulate the naming scheme of the existing pets I already included.
+- 4 animations, one for each different mood (Neutral, Happy, Sad, Angry). Name them each "SPECIES anim idleMOOD.fbx" with the SPECIES keyword replaced with your new species name, and the MOOD keyword replaced with the corresponding mood. These filenames are ALL case sensitive, so if in doubt, try to emulate the naming scheme of the existing pets I already included.
 - To use randomized colors, make sure your pet has at least 1 material called **colors**. The pet can have other materials too, but only the one named **colors** will actually be affected by the script. You can apply the colors.png texture in /assets/pets/ to help you UVmap the texture correctly in Blender or other 3D app. 
 - Lastly, Modify the species array in the pets.js script, at (around) line 69, where the LIST_SPECIES variable is set. Add your new species to the array as an additional entry. As long as you named the PNG and FBX files above using the correct filename, the script will find them and use them appropriately.
