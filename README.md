@@ -22,7 +22,7 @@ If you don't like your pet's randomly selected colors, simply create a new pet u
 - The Nametag button is supposed to toggle the pet's nametag visibility, but for some reason, it will only hide (not show) the nametag. To bring the nametag back, press the Respawn button instead for now.
 
 ###### CREATE YOUR OWN PET SPECIES:
-In order to add your own custom pets to the app, you will need to create the following for each new species:
+In order to add your own custom pet species to the app, you will need to create the following for each new species:
 - 10 thumbnails, 1 for each of the 10 different colors, in 256x256 PNG format, in the assets/pets/thumbnails folder, with the following name format (replacing # with 0-9): SPECIES#.png
   -  Replace SPECIES with your new pet's species, ie. Dog
 - A rigged 3D model in FBX format, without an animation, but should contain the armature/skeleton. Place this FBX in assets/pets/ and name it SPECIES.fbx (again, replace SPECIES with your new pet's species name). To get the dimensions/scaling right, import one of the default species' FBX into BLender and stick to the same dimensions.
