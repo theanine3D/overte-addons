@@ -11,10 +11,10 @@ If you don't like your pet's randomly selected colors, simply create a new pet u
 ###### INSTALLATION
 1) Look for the latest release and download it from the [Releases](https://github.com/theanine3D/overte-addons/releases) section.
 2) Download the ZIP.
-3) 4n Overte, go into the Edit-> Running Scripts menu, and press the "Reveal Scripts Folder" button
+3) In Overte, go into the Edit-> Running Scripts menu, and press the "Reveal Scripts Folder" button
 4) Go into the communityScripts folder in the new window that pops up. Create a folder called "pets"
 5) Unzip the zip file you downloaded into this new folder.
-6) in Overte's Running Scripts menu, press "From Disk" and navigate to the new folder you just created. Pick the pets.js file.
+6) In Overte's Running Scripts menu, press "From Disk" and navigate to the new folder you just created. Pick the pets.js file.
 7) In the bottom of the screen you should now see a Pets button in your main toolbar. Press that to start the app.
 
 ###### KNOWN BUGS:
