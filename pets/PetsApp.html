@@ -275,7 +275,13 @@
 
             // calculate pet age
             pet.petBirthDay = new Date(pet.petBirthDay);
-            document.getElementById("petAge").innerHTML = Math.floor(Math.abs((currentDate.getTime() - pet.petBirthDay.getTime()) / (1000 * 3600 * 24))) + " days";
+            var daysSinceBirth = Math.floor(Math.abs((currentDate.getTime() - pet.petBirthDay.getTime()) / (1000 * 3600 * 24)));
+            if (daysSinceBirth === 1) {
+                document.getElementById("petAge").innerHTML = daysSinceBirth + " day";
+            }
+            else {
+                document.getElementById("petAge").innerHTML = daysSinceBirth + " days";
+            }
 
             // calculate pet level based on feed count
             var calcLevel = pet.petFeedCount;
