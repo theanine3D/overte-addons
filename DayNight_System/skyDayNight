@@ -43,7 +43,7 @@
     const cloudSpeed = 1;       // increase to make the clouds move faster
 
     var seconds = ((currentTime.getMinutes() + (currentTime.getHours() * 60)) * 60) + currentTime.getSeconds();
-    var timeProgress = seconds % secondsInADay;
+    var timeProgress = (seconds / secondsInADay) % 1;
     var cycleSpeed = 1;   // 1 = a single day/night transition for every real-world 24 hours. Increase it if you want faster transitions than the real world
     var nightAlpha = 0;
 
@@ -58,9 +58,9 @@
         "animation": {
             url: animURL,
             firstFrame: 1,
-            lastFrame: 23001,
+            lastFrame: 11501,
             loop: true,
-            fps: 0.01 * cloudSpeed,
+            fps: 24 * cloudSpeed,
             running: true
         }
     });
@@ -92,14 +92,6 @@
             "materialMappingPos": {
                 "x": 0.0,
                 "y": 0.0
-            },
-            "animation": {
-                url: animURL,
-                firstFrame: 1,
-                lastFrame: 23001,
-                loop: true,
-                fps: 0.01,
-                running: true
             }
         }, "domain");
 
@@ -168,8 +160,7 @@
     function updateDayNight() {
         currentTime = new Date();
         seconds = ((currentTime.getMinutes() + (currentTime.getHours() * 60)) * 60) + currentTime.getSeconds();
-        timeProgress = seconds % secondsInADay;
-        // print(JSON.stringify(timeProgress));
+        timeProgress = (seconds / secondsInADay) % 1;
 
         // calculate if it's nighttime - the result affects the opacity of clouds/stars
         if ((timeProgress % 1) <= 0.2075) {
