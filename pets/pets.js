@@ -604,6 +604,10 @@
             pet.lastFeedDate = new Date(JSON.stringify(pet.lastFeedDate));
         }
 
+        if (pet.lastFeedDate === null || pet.lastFeedDate === undefined) {
+            pet.lastFeedDate = new Date(pet.petBirthDay);
+        }
+
         if (pet.lastFeedDate.getMonth() === currentDate.getMonth() && pet.lastFeedDate.getFullYear() === currentDate.getFullYear() && pet.lastFeedDate.getDate() === currentDate.getDate()) {
             // if pet was already fed today, notify the pet owner
             Window.alert("Your pet is full. Try again later.");
