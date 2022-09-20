@@ -607,7 +607,7 @@
             pet.lastFeedDate = new Date();
             pet.petFeedCount += 1;
 
-            Window.alert("Yummy! ${pet.petName} appreciates you!");
+            Window.alert("Yummy! " + pet.petName + " appreciates you!");
             updatePet();
         }
 
