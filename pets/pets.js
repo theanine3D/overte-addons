@@ -57,6 +57,7 @@
     if (Settings.getValue("pet") !== 0 || Settings.getValue("pet").petName !== undefined) {
         pet = Settings.getValue("pet");
     }
+
     else { Settings.setValue("pet", petDefault); }
 
     var currentDate = new Date();
@@ -599,13 +600,6 @@
 
         if (typeof pet.lastFeedDate === "string") {
             pet.lastFeedDate = new Date(pet.lastFeedDate);
-        }
-        if (typeof pet.lastFeedDate === "object") {
-            pet.lastFeedDate = new Date(JSON.stringify(pet.lastFeedDate));
-        }
-
-        if (pet.lastFeedDate === null || pet.lastFeedDate === undefined || pet.lastFeedDate === "") {
-            pet.lastFeedDate = new Date(pet.petBirthDay);
         }
 
         if (pet.lastFeedDate.getMonth() === currentDate.getMonth() && pet.lastFeedDate.getFullYear() === currentDate.getFullYear() && pet.lastFeedDate.getDate() === currentDate.getDate()) {
