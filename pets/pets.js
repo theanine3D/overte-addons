@@ -604,7 +604,7 @@
             pet.lastFeedDate = new Date(JSON.stringify(pet.lastFeedDate));
         }
 
-        if (pet.lastFeedDate === null || pet.lastFeedDate === undefined) {
+        if (pet.lastFeedDate === null || pet.lastFeedDate === undefined || pet.lastFeedDate === "") {
             pet.lastFeedDate = new Date(pet.petBirthDay);
         }
 
