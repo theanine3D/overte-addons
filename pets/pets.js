@@ -596,6 +596,9 @@
     // Feed button
     function feedPet() {
         // check if pet was already fed today
+
+        pet.lastFeedDate = new Date(pet.lastFeedDate);
+
         if (pet.lastFeedDate.getMonth() === currentDate.getMonth() && pet.lastFeedDate.getFullYear() === currentDate.getFullYear() && pet.lastFeedDate.getDate() === currentDate.getDate()) {
             // if pet was already fed today, notify the pet owner
             Window.alert("Your pet is full. Try again later.");
