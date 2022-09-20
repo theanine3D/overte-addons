@@ -61,9 +61,9 @@
 
     var currentDate = new Date();
 
-    var petColorTexture = "https://theanine3d.github.io/pets/assets/pets/colors.png";
-    var petRoughnessTexture = "https://theanine3d.github.io/pets/assets/pets/r_50.png";
-    var petMetallicTexture = "https://theanine3d.github.io/pets/assets/pets/r_0.png";
+    var petColorTexture = ROOT + "assets/pets/colors.png";
+    var petRoughnessTexture = ROOT + "assets/pets/r_50.png";
+    var petMetallicTexture = ROOT + "assets/pets/r_0.png";
 
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
     var LIST_SPECIES = ['Fairy', 'Bird', 'Dragon', 'Tux'];
@@ -80,7 +80,7 @@
         for (var k = 0; k < LIST_MOODS.length; k++) {
             ANIMATIONS[j][k] = Array();
             for (var i = 0; i < LIST_ANIMATIONS.length; i++) {
-                var animationURL = "https://theanine3d.github.io/pets/assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + LIST_MOODS[k] + ".fbx";
+                var animationURL = ROOT + "assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + LIST_MOODS[k] + ".fbx";
                 var resourceAnim = AnimationCache.prefetch(animationURL);
                 var animation = AnimationCache.getAnimation(animationURL);
                 ANIMATIONS[j][k] = { name: LIST_ANIMATIONS[i], url: animationURL, resource: resourceAnim, animation: animation };
@@ -90,8 +90,8 @@
 
     LIST_SPECIES.forEach(function (name) {
         for (i = 0; i < 10; i++) {
-            var speciesURL = "https://theanine3d.github.io/pets/assets/pets/" + name + ".fbx";
-            var thumbnailURL = "https://theanine3d.github.io/pets/assets/pets/thumbnails/" + name + i + ".png";
+            var speciesURL = ROOT + "assets/pets/" + name + ".fbx";
+            var thumbnailURL = ROOT + "assets/pets/thumbnails/" + name + i + ".png";
             var thumbnailCached = TextureCache.prefetch(thumbnailURL);
             SPECIES[name] = { name: name, url: speciesURL };
         }
@@ -408,7 +408,7 @@
 
         if (respawning === false) {
             Entities.editEntity(petEntityID, {
-                "modelURL": "https://theanine3d.github.io/pets/assets/pets/Egg.fbx",
+                "modelURL": ROOT + "assets/pets/Egg.fbx",
                 "rotation": { x: 0, y: 0, z: 0 },
             });
             Entities.editEntity(petEntityID, {
@@ -420,7 +420,7 @@
 
         else {
             Entities.editEntity(petEntityID, {
-                "modelURL": "https://theanine3d.github.io/pets/assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
+                "modelURL": ROOT + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
                 "rotation": { x: 0, y: 0, z: 0 }
             });
             Entities.editEntity(petEntityID, {
