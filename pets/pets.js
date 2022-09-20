@@ -61,9 +61,9 @@
 
     var currentDate = new Date();
 
-    var petColorTexture = Script.resolvePath(".") + "assets/pets/colors.png";
-    var petRoughnessTexture = Script.resolvePath(".") + "assets/pets/r_50.png";
-    var petMetallicTexture = Script.resolvePath(".") + "assets/pets/r_0.png";
+    var petColorTexture = "https://theanine3d.github.io/pets/assets/pets/colors.png";
+    var petRoughnessTexture = "https://theanine3d.github.io/pets/assets/pets/r_50.png";
+    var petMetallicTexture = "https://theanine3d.github.io/pets/assets/pets/r_0.png";
 
     // YOU CAN ADD/REMOVE PET SPECIES BY EDITING THIS SECTION.
     var LIST_SPECIES = ['Fairy', 'Bird', 'Dragon', 'Tux'];
@@ -80,7 +80,7 @@
         for (var k = 0; k < LIST_MOODS.length; k++) {
             ANIMATIONS[j][k] = Array();
             for (var i = 0; i < LIST_ANIMATIONS.length; i++) {
-                var animationURL = Script.resolvePath(".") + "assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + LIST_MOODS[k] + ".fbx";
+                var animationURL = "https://theanine3d.github.io/pets/assets/pets/anims/" + LIST_SPECIES[j] + " anim " + LIST_ANIMATIONS[i] + LIST_MOODS[k] + ".fbx";
                 var resourceAnim = AnimationCache.prefetch(animationURL);
                 var animation = AnimationCache.getAnimation(animationURL);
                 ANIMATIONS[j][k] = { name: LIST_ANIMATIONS[i], url: animationURL, resource: resourceAnim, animation: animation };
@@ -90,8 +90,8 @@
 
     LIST_SPECIES.forEach(function (name) {
         for (i = 0; i < 10; i++) {
-            var speciesURL = Script.resolvePath("assets/pets/") + name + ".fbx";
-            var thumbnailURL = Script.resolvePath("assets/pets/thumbnails/" + name + i + ".png");
+            var speciesURL = "https://theanine3d.github.io/pets/assets/pets/" + name + ".fbx";
+            var thumbnailURL = "https://theanine3d.github.io/pets/assets/pets/thumbnails/" + name + i + ".png";
             var thumbnailCached = TextureCache.prefetch(thumbnailURL);
             SPECIES[name] = { name: name, url: speciesURL };
         }
@@ -365,11 +365,50 @@
         Entities.deleteEntity(petMatEntityID);
         Entities.deleteEntity(petEntityID);
 
-        petEntityID = Entities.addEntity(Script.require("./assets/pets/pet.json"), "avatar");
+        petEntityID = Entities.addEntity({
+            "visible": false,
+            "type": "Model",
+            "lastEdited": 1662410609244065,
+            "position": {
+                "x": -0.6266708374023438,
+                "y": 0.9060897827148438,
+                "z": 0.5032258033752441
+            },
+            "queryAACube": {
+                "x": 8.883856773376465,
+                "y": -25.828712463378906,
+                "z": 121.48577117919922,
+                "scale": 1.1500637531280518
+            },
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                }
+            },
+            "damping": 0,
+            "angularDamping": 0,
+            "blendshapeCoefficients": "{\n}\n",
+            "useOriginalPivot": true,
+            "clientOnly": false,
+            "avatarEntity": false,
+            "localEntity": false,
+            "faceCamera": false,
+            "isFacingAvatar": false
+        }, "avatar");
 
         if (respawning === false) {
             Entities.editEntity(petEntityID, {
-                "modelURL": Script.resolvePath(".") + "assets/pets/Egg.fbx",
+                "modelURL": "https://theanine3d.github.io/pets/assets/pets/Egg.fbx",
                 "rotation": { x: 0, y: 0, z: 0 },
             });
             Entities.editEntity(petEntityID, {
@@ -381,7 +420,7 @@
 
         else {
             Entities.editEntity(petEntityID, {
-                "modelURL": Script.resolvePath(".") + "assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
+                "modelURL": "https://theanine3d.github.io/pets/assets/pets/" + LIST_SPECIES[pet.petSpecies] + ".fbx",
                 "rotation": { x: 0, y: 0, z: 0 }
             });
             Entities.editEntity(petEntityID, {
@@ -439,7 +478,38 @@
         updatePetMood();
 
         // ADD NEW NAMETAG ENTITY
-        petNametagEntityID = Entities.addEntity(Script.require("./assets/pets/nametag.json"), "avatar");
+        petNametagEntityID = Entities.addEntity({
+            "type": "Text",
+            "name": "petNameTag_",
+            "dimensions": {
+                "x": 1.0246875286102295,
+                "y": 0.08865754306316376,
+                "z": 0.009999999776482582
+            },
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0,
+                "w": 1
+            },
+            "canCastShadow": false,
+            "billboardMode": "full",
+            "collisionless": true,
+            "ignoreForCollisions": true,
+            "text": "INSERTPETNAME",
+            "lineHeight": 0.0869,
+            "backgroundAlpha": 0,
+            "unlit": true,
+            "textEffect": "shadow",
+            "textEffectColor": {
+                "red": 48,
+                "green": 48,
+                "blue": 48
+            },
+            "textEffectThickness": 0.18,
+            "alignment": "center",
+            "isFacingAvatar": true
+        }, "avatar");
         updateNameTag(false);
     }
 
