@@ -17,12 +17,12 @@
 
     var skydomeID = Entities.getEntityProperties(this).entityID;
     var sunmoonID;
-    // var shapesBoneIndex = Entities.getJointIndex(skydomeID, "shapes");
+    var unclearedEntities = [];
 
 
     // find the sun/moon model and store its ID
     function findSunMoon() {
-        var unclearedEntities = Entities.getChildrenIDs(skydomeID);
+        unclearedEntities = Entities.getChildrenIDs(skydomeID);
         var foundIt = false;
         for (var i = 0; i < unclearedEntities.length; i++) {
             if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_SunMoon") !== -1) {
@@ -34,14 +34,21 @@
         }
     }
 
+    // delete dupe materials
     function cleanupEntities() {
         unclearedEntities = Entities.getChildrenIDs(skydomeID);
         for (var i = 0; i < unclearedEntities.length; i++) {
-            // delete dupe materials
             if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
                 Entities.deleteEntity(unclearedEntities[i]);
             }
         }
+        unclearedEntities = Entities.getChildrenIDs(sunmoonID);
+        for (var i = 0; i < unclearedEntities.length; i++) {
+            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
+                Entities.deleteEntity(unclearedEntities[i]);
+            }
+        }
+
     }
 
     function map_range(value, low1, high1, low2, high2) {
@@ -54,7 +61,6 @@
         // Window.alert("Entity ID: " + this.entityID);
         findSunMoon();
         cleanupEntities();
-
     };
 
     // SETUP VARIABLES
@@ -97,6 +103,9 @@
             running: true
         }
     });
+
+    findSunMoon();
+    cleanupEntities();
 
     // ADD GRADIENT MATERIAL ENTITY
     var gradientMatID = Entities.addEntity(
@@ -320,6 +329,7 @@
         currentTime = new Date();
         seconds = ((currentTime.getMinutes() + (currentTime.getHours() * 60)) * 60) + currentTime.getSeconds();
         timeProgress = (seconds / secondsInADay) % 1;
+        // print(timeProgress);
 
         // update the sun / moon rotation via bone manipulation
         Entities.editEntity(sunmoonID, {
