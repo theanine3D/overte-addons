@@ -1,217 +1,217 @@
 {
-  "DataVersion": 0,
-  "Entities": [
-    {
-    "id": "{955d7114-52ad-4f6b-bcb8-afbd2658f640}",
-    "type": "Model",
-    "lastEdited": 1663730750054541,
-    "parentID": "{8e1d7fa4-5522-4faf-a831-c1fbffe439e3}",
-    "name": "sky_DayNight_SunMoon",
-    "position": {
-        "x": -3.637978807091713e-12,
-        "y": 0,
-        "z": 0
-    },
-    "dimensions": {
-        "x": 0.24253380298614502,
-        "y": 2.46612548828125,
-        "z": 0.2414017915725708
-    },
-    "rotation": {
-        "x": 0,
-        "y": 0,
-        "z": 0.450423002243042,
-        "w": -0.8928152918815613
-    },
-    "created": 1663727522807808,
-    "lastEditedBy": "{aa5fde74-eec2-4c14-ac8b-6131d3fec9d6}",
-    "queryAACube": {
-        "x": -1.2451828718185425,
-        "y": -9.922091484069824,
-        "z": -1.2612591981887817,
-        "scale": 10.025490760803223
-    },
-    "canCastShadow": false,
-    "grab": {
-        "grabbable": false,
-        "equippableLeftRotation": {
-            "x": -0.0000152587890625,
-            "y": -0.0000152587890625,
-            "z": -0.0000152587890625,
-            "w": 1
+    "DataVersion": 0,
+    "Entities": [
+        {
+            "id": "{955d7114-52ad-4f6b-bcb8-afbd2658f640}",
+            "type": "Model",
+            "lastEdited": 1663730750054541,
+            "parentID": "{8e1d7fa4-5522-4faf-a831-c1fbffe439e3}",
+            "name": "sky_DayNight_SunMoon",
+            "position": {
+                "x": -3.637978807091713e-12,
+                "y": 0,
+                "z": 0
+            },
+            "dimensions": {
+                "x": 0.24253380298614502,
+                "y": 2.46612548828125,
+                "z": 0.2414017915725708
+            },
+            "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0.450423002243042,
+                "w": -0.8928152918815613
+            },
+            "created": 1663727522807808,
+            "lastEditedBy": "{aa5fde74-eec2-4c14-ac8b-6131d3fec9d6}",
+            "queryAACube": {
+                "x": -1.2451828718185425,
+                "y": -9.922091484069824,
+                "z": -1.2612591981887817,
+                "scale": 10.025490760803223
+            },
+            "canCastShadow": false,
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                }
+            },
+            "damping": 0,
+            "angularDamping": 0,
+            "collisionless": true,
+            "ignoreForCollisions": true,
+            "script": "file:///G:/Documents/Programming/Overte/Day and Night System/skyDayNight.js",
+            "scriptTimestamp": 1663727566848,
+            "modelURL": "G:\\Documents\\Programming\\Overte\\Day and Night System\\export\\sky_DayNight_sunmoon.fbx",
+            "jointRotationsSet": [
+                false,
+                false,
+                true,
+                false,
+                false
+            ],
+            "jointRotations": [
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": -0.0000152587890625,
+                    "y": 0.549797773361206,
+                    "z": -0.0000152587890625,
+                    "w": -0.8352941274642944
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                }
+            ],
+            "blendshapeCoefficients": "{\n}\n",
+            "useOriginalPivot": true,
+            "animation": {
+                "allowTranslation": false,
+                "fps": 24,
+                "loop": false,
+                "firstFrame": 1,
+                "lastFrame": 8626
+            },
+            "clientOnly": false,
+            "avatarEntity": false,
+            "localEntity": false,
+            "faceCamera": false,
+            "isFacingAvatar": false
         },
-        "equippableRightRotation": {
-            "x": -0.0000152587890625,
-            "y": -0.0000152587890625,
-            "z": -0.0000152587890625,
-            "w": 1
+        {
+            "id": "{8e1d7fa4-5522-4faf-a831-c1fbffe439e3}",
+            "type": "Model",
+            "lastEdited": 1663730729213277,
+            "name": "sky_DayNight_Dome",
+            "dimensions": {
+                "x": 2.4999985694885254,
+                "y": 2.499999761581421,
+                "z": 2.499997615814209
+            },
+            "rotation": {
+                "x": -0.0000152587890625,
+                "y": -0.0000152587890625,
+                "z": -0.0000152587890625,
+                "w": 1
+            },
+            "created": 1663725777977344,
+            "lastEditedBy": "{aa5fde74-eec2-4c14-ac8b-6131d3fec9d6}",
+            "queryAACube": {
+                "x": -2.165062427520752,
+                "y": -2.165062427520752,
+                "z": -2.165062427520752,
+                "scale": 4.330124855041504
+            },
+            "canCastShadow": false,
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                }
+            },
+            "damping": 0,
+            "angularDamping": 0,
+            "collisionless": true,
+            "ignoreForCollisions": true,
+            "script": "file:///G:/Documents/Programming/Overte/Day and Night System/skyDayNight.js",
+            "scriptTimestamp": 1663730729212,
+            "modelURL": "G:\\Documents\\Programming\\Overte\\Day and Night System\\export\\sky_DayNight_skydome.fbx",
+            "jointRotationsSet": [
+                false,
+                false,
+                true,
+                false,
+                false
+            ],
+            "jointRotations": [
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": 2.1710168596200674e-7,
+                    "y": -8.597622525030602e-8,
+                    "z": 0.7071068286895752,
+                    "w": -0.7071067094802856
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                }
+            ],
+            "blendshapeCoefficients": "{\n}\n",
+            "useOriginalPivot": true,
+            "animation": {
+                "url": "file:///G:/Documents/Programming/Overte/Day and Night System/export/sky_DayNight_skydome_idle.fbx",
+                "allowTranslation": false,
+                "fps": 24,
+                "currentFrame": 8213.86328125,
+                "running": true,
+                "firstFrame": 1,
+                "lastFrame": 8626
+            },
+            "clientOnly": false,
+            "avatarEntity": false,
+            "localEntity": false,
+            "faceCamera": false,
+            "isFacingAvatar": false
         }
-    },
-    "damping": 0,
-    "angularDamping": 0,
-    "collisionless": true,
-    "ignoreForCollisions": true,
-    "script": "file:///G:/Documents/Programming/Overte/Day and Night System/skyDayNight.js",
-    "scriptTimestamp": 1663727566848,
-    "modelURL": "G:\\Documents\\Programming\\Overte\\Day and Night System\\export\\sky_DayNight_sunmoon.fbx",
-    "jointRotationsSet": [
-        false,
-        false,
-        true,
-        false,
-        false
     ],
-    "jointRotations": [
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": -0.0000152587890625,
-            "y": 0.549797773361206,
-            "z": -0.0000152587890625,
-            "w": -0.8352941274642944
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        }
-    ],
-    "blendshapeCoefficients": "{\n}\n",
-    "useOriginalPivot": true,
-    "animation": {
-        "allowTranslation": false,
-        "fps": 24,
-        "loop": false,
-        "firstFrame": 1,
-        "lastFrame": 11501
-    },
-    "clientOnly": false,
-    "avatarEntity": false,
-    "localEntity": false,
-    "faceCamera": false,
-    "isFacingAvatar": false
-},
-    {
-    "id": "{8e1d7fa4-5522-4faf-a831-c1fbffe439e3}",
-    "type": "Model",
-    "lastEdited": 1663730729213277,
-    "name": "sky_DayNight_Dome",
-    "dimensions": {
-        "x": 2.4999985694885254,
-        "y": 2.499999761581421,
-        "z": 2.499997615814209
-    },
-    "rotation": {
-        "x": -0.0000152587890625,
-        "y": -0.0000152587890625,
-        "z": -0.0000152587890625,
-        "w": 1
-    },
-    "created": 1663725777977344,
-    "lastEditedBy": "{aa5fde74-eec2-4c14-ac8b-6131d3fec9d6}",
-    "queryAACube": {
-        "x": -2.165062427520752,
-        "y": -2.165062427520752,
-        "z": -2.165062427520752,
-        "scale": 4.330124855041504
-    },
-    "canCastShadow": false,
-    "grab": {
-        "grabbable": false,
-        "equippableLeftRotation": {
-            "x": -0.0000152587890625,
-            "y": -0.0000152587890625,
-            "z": -0.0000152587890625,
-            "w": 1
-        },
-        "equippableRightRotation": {
-            "x": -0.0000152587890625,
-            "y": -0.0000152587890625,
-            "z": -0.0000152587890625,
-            "w": 1
-        }
-    },
-    "damping": 0,
-    "angularDamping": 0,
-    "collisionless": true,
-    "ignoreForCollisions": true,
-    "script": "file:///G:/Documents/Programming/Overte/Day and Night System/skyDayNight.js",
-    "scriptTimestamp": 1663730729212,
-    "modelURL": "G:\\Documents\\Programming\\Overte\\Day and Night System\\export\\sky_DayNight_skydome.fbx",
-    "jointRotationsSet": [
-        false,
-        false,
-        true,
-        false,
-        false
-    ],
-    "jointRotations": [
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": 2.1710168596200674e-7,
-            "y": -8.597622525030602e-8,
-            "z": 0.7071068286895752,
-            "w": -0.7071067094802856
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        },
-        {
-            "x": 0,
-            "y": 0,
-            "z": 0,
-            "w": 1
-        }
-    ],
-    "blendshapeCoefficients": "{\n}\n",
-    "useOriginalPivot": true,
-    "animation": {
-        "url": "file:///G:/Documents/Programming/Overte/Day and Night System/export/sky_DayNight_skydome_idle.fbx",
-        "allowTranslation": false,
-        "fps": 24,
-        "currentFrame": 8213.86328125,
-        "running": true,
-        "firstFrame": 1,
-        "lastFrame": 11501
-    },
-    "clientOnly": false,
-    "avatarEntity": false,
-    "localEntity": false,
-    "faceCamera": false,
-    "isFacingAvatar": false
-}
-    ],
-  "Id": "{1d7ecf6d-0daa-438c-af52-d7aa64946e85}",
-  "Version": 133
+    "Id": "{1d7ecf6d-0daa-438c-af52-d7aa64946e85}",
+    "Version": 133
 }
