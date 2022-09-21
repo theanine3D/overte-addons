@@ -337,15 +337,17 @@
         });
 
         // calculate if it's nighttime - the result affects the opacity of clouds/stars. If nightAlpha = 1, it is fully night time, while 0 is daytime
-        if ((timeProgress % 1) <= 0.208) {
-            nightAlpha = map_range(timeProgress, 0, 0.208, 1, 0);
+        if ((timeProgress % 1) >= 0.2 && (timeProgress % 1) <= 0.3) {
+            nightAlpha = map_range((timeProgress % 1), 0.2, 0.3, 1, 0);
         }
-        if ((timeProgress % 1) >= 0.708) {
-            nightAlpha = map_range(timeProgress, 0.708, 1, 0, 1);
+        else if ((timeProgress % 1) >= 0.7 && (timeProgress % 1) <= 0.8) {
+            nightAlpha = map_range((timeProgress % 1), 0.7, 0.8, 1, 0);
         }
-        // if ((timeProgress % 1) > 0.2075 && (timeProgress % 1) < 0.708) {
-        else {
+        else if ((timeProgress % 1) < 0.2) {
             nightAlpha = 0;
+        }
+        else if ((timeProgress % 1) > 0.8) {
+            nightAlpha = 1;
         }
 
         // update the gradient, based on current time of day
@@ -399,7 +401,7 @@
                             "opacityMap": cloudsURL,
                             "roughnessMap": roughnessURL,
                             "metallicMap": metallicURL,
-                            "opacity": 1 - nightAlpha,
+                            "opacity": 1 - (nightAlpha / 2),
                             "unlit": true
                         }
                     ]
@@ -456,7 +458,7 @@
                 })
             });
 
-        // update the sun and moon, based on current time of day
+        // update the MOON, based on current time of day
         Entities.editEntity(moonMatID,
             {
                 "type": "Material",
@@ -480,12 +482,14 @@
                             "roughnessMap": roughnessURL,
                             "metallicMap": metallicURL,
                             "unlit": true,
-                            "opacityMapMode": "OPACITY_MAP_BLEND",
+                            "opacityMapMode": "OPACITY_MAP_MASK",
                             "opacity": nightAlpha
                         }
                     ]
                 })
             });
+
+        // update the SUN, based on current time of day
         Entities.editEntity(sunMatID,
             {
                 "type": "Material",
