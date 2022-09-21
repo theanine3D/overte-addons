@@ -190,7 +190,7 @@
             "name": "petNametag" + "_" + petOwner.name + "_" + pet.petName,
             "parentID": petEntityID,
             "visible": true,
-            "text": pet.petName,
+            "text": pet.petName + " (Lvl " + JSON.stringify(Math.floor(pet.petFeedCount / 3)) + ")",
             "grab": {
                 "grabbable": false,
                 "equippableLeftRotation": {
@@ -706,7 +706,7 @@
                 });
                 Entities.editEntity(petNametagEntityID, {
                     "name": "petNametag_" + petOwner.name + "_" + pet.petName,
-                    "text": pet.petName
+                    "text": pet.petName + " (Lvl " + JSON.stringify(Math.floor(pet.petFeedCount / 3)) + ")",
                 });
 
                 updatePet();
