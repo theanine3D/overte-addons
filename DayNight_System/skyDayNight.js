@@ -17,8 +17,6 @@
 
     var skydomeID = Entities.getEntityProperties(this).entityID;
     var sunmoonID;
-    var unclearedEntities = [];
-
 
     // find the sun/moon model and store its ID
     function findSunMoon() {
@@ -43,25 +41,8 @@
                 Entities.deleteEntity(unclearedEntities[i]);
             }
         }
-
-        // unclearedEntities = Entities.getChildrenIDs(skydomeID);
-        // for (var i = 0; i < unclearedEntities.length; i++) {
-        //     if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
-        //         if (Entities.getEntityProperties(unclearedEntities[i]).id !== gradientMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== starsMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== cloudsMatID) {
-        //             Entities.deleteEntity(unclearedEntities[i]);
-        //         }
-        //     }
-        //     unclearedEntities = Entities.getChildrenIDs(sunmoonID);
-        //     for (var i = 0; i < unclearedEntities.length; i++) {
-        //         if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
-        //             if (Entities.getEntityProperties(unclearedEntities[i]).id !== sunMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== moonMatID) {
-        //                 Entities.deleteEntity(unclearedEntities[i]);
-        //             }
-        //         }
-        //     }
-
-        // }
     }
+    cleanupEntities()
 
     function map_range(value, low1, high1, low2, high2) {
         return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
@@ -72,7 +53,6 @@
         skydomeID = this.entityID;
         // Window.alert("Entity ID: " + this.entityID);
         findSunMoon();
-        cleanupEntities();
     };
 
     // SETUP VARIABLES
@@ -119,7 +99,6 @@
     });
 
     findSunMoon();
-    cleanupEntities();
 
     // ADD GRADIENT MATERIAL ENTITY
     var gradientMatID = Entities.addEntity(
@@ -551,4 +530,3 @@
     Script.scriptEnding.connect(endScript);
 
 });
-
