@@ -36,19 +36,31 @@
 
     // delete dupe materials
     function cleanupEntities() {
-        unclearedEntities = Entities.getChildrenIDs(skydomeID);
+        var unclearedEntities = [];
+        unclearedEntities = Entities.findEntitiesByType("Material", Entities.getEntityProperties(skydomeID).position, 1000);
         for (var i = 0; i < unclearedEntities.length; i++) {
-            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
-                Entities.deleteEntity(unclearedEntities[i]);
-            }
-        }
-        unclearedEntities = Entities.getChildrenIDs(sunmoonID);
-        for (var i = 0; i < unclearedEntities.length; i++) {
-            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
+            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") != -1) {
                 Entities.deleteEntity(unclearedEntities[i]);
             }
         }
 
+        // unclearedEntities = Entities.getChildrenIDs(skydomeID);
+        // for (var i = 0; i < unclearedEntities.length; i++) {
+        //     if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
+        //         if (Entities.getEntityProperties(unclearedEntities[i]).id !== gradientMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== starsMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== cloudsMatID) {
+        //             Entities.deleteEntity(unclearedEntities[i]);
+        //         }
+        //     }
+        //     unclearedEntities = Entities.getChildrenIDs(sunmoonID);
+        //     for (var i = 0; i < unclearedEntities.length; i++) {
+        //         if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
+        //             if (Entities.getEntityProperties(unclearedEntities[i]).id !== sunMatID || Entities.getEntityProperties(unclearedEntities[i]).id !== moonMatID) {
+        //                 Entities.deleteEntity(unclearedEntities[i]);
+        //             }
+        //         }
+        //     }
+
+        // }
     }
 
     function map_range(value, low1, high1, low2, high2) {
@@ -326,6 +338,7 @@
                 ]
             })
         }, "domain");
+
 
     function updateDayNight() {
         currentTime = new Date();
