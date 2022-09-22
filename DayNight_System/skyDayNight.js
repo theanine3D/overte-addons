@@ -82,18 +82,20 @@
     var jsMainFileName = "skyDayNight.js";
     var ROOT = Script.resolvePath('').split(jsMainFileName)[0];
 
-    var gradientsURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/skyGradients.png";
-    var cloudsURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/skyClouds.png";
-    var starsURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/skyStars.png";
-    var sunmoonURL = "file:///G:/Documents/Programming/Overte/Day and Night System/export/sky_DayNight_sunmoon.fbx";
-    var sunURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/skySun.png";
-    var moonURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/skyMoon.png";
-    var roughnessURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/r_100.png";
-    var metallicURL = "file:///G:/Documents/Programming/Overte/Day and Night System/textures/r_0.png";
+    var domeURL = ROOT + "models/sky_DayNight_Dome.fbx";
+    var sunmoonURL = ROOT + "models/sky_DayNight_sunmoon.fbx";
+    var animURL = ROOT + "models/sky_DayNight_skydome_idle.fbx";
 
-    var animURL = "file:///G:/Documents/Programming/Overte/Day and Night System/export/sky_DayNight_skydome_idle.fbx";
+    var gradientsURL = ROOT + "textures/skyGradients.png";
+    var cloudsURL = ROOT + "textures/skyClouds.png";
+    var starsURL = ROOT + "textures/skyStars.png";
+    var sunURL = ROOT + "textures/skySun.png";
+    var moonURL = ROOT + "textures/skyMoon.png";
+    var roughnessURL = ROOT + "textures/r_100.png";
+    var metallicURL = ROOT + "textures/r_0.png";
 
     Entities.editEntity(skydomeID, {
+        "modelURL": domeURL,
         "animation": {
             url: animURL,
             firstFrame: 1,
@@ -536,4 +538,3 @@
     Script.scriptEnding.connect(endScript);
 
 });
-
