@@ -45,7 +45,7 @@
             "angularDamping": 0,
             "collisionless": true,
             "ignoreForCollisions": true,
-            "script": "skyDayNight.js",
+            "script": "https://theanine3d.github.io/DayNight_System/skyDayNight.js",
             "scriptTimestamp": 1663730712576,
             "modelURL": "https://theanine3d.github.io/DayNight_System/models/sky_DayNight_skydome.fbx",
             "jointRotationsSet": [
