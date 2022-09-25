@@ -34,6 +34,8 @@ This is a scripted day/night system for  [Overte](https://overte.org/). Once pla
 ###### INSTALLATION:
 To add this day/night system to your scene: 
 - You should delete* any existing zone entities in your scene, as they'll override the one created by this script.
+  - this step can skipped if you customize the script and set variable "useCustomZone" to false, as described below in the Customization section.
+
 - In Overte, go into Edit -> Import Entities (.json) From a URL
 - Copy/paste [this link](https://theanine3d.github.io/DayNight_System/skyDayNight_Dome.json) into the text box that pops up, and press OK.
 - An animated skydome will appear in your scene. Go into the Create app and type "sky_" in the search filter to find it.
@@ -42,7 +44,6 @@ To add this day/night system to your scene:
 - In the Create app, go into the third tab on the left (the Spatial tab, with a blue icon), and in the "Scale" box, type in a very large number - 100000 is often enough. This may very depending on your specific scene. Feel free to tinker.
 -  Press the blue "RESCALE" button. 
 -  The scripted skydome will now engulf your scene, with a custom zone entity built-in and created automatically with the same dimensions as the dome.
-* - this step can skipped if you customize the script and set variable "useCustomZone" to false, as described below in the Customization section.
 
 ###### CUSTOMIZATION
 The script offers some customization options, for those who don't like the default settings. However, you will need to download the .js script and host it yourself somewhere if you want to tweak the settings. Find the "CUSTOMIZATION" section in the .js file to find these settings:
