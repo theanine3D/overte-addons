@@ -15,7 +15,7 @@ To add this day/night system to your scene:
 - An animated skydome will appear in your scene. Go into the Create app and type "sky_" in the search filter to find it.
 - You will see two Model Entities that have "sky_DayNight" in their name. One is a model for the sun/moon, and the other is for everything else. Highlight **both** model entities. This is very important! 
 - Once both models are highlighted, move them both so that they are as close to the **visual** center of your scene as possible. This does not necessarily mean coordinate 0,0,0!
-- In the Create app, go into the third tab on the left (the Spatial tab, with a blue icon), and in the "Scale" box, type in a very large number - 100000 is often enough. This may very depending on your specific scene. Feel free to tinker.
+- In the Create app, go into the third tab on the left (the Spatial tab, with a blue icon), and in the "Scale" box, type in a very large number - 100000 is often enough. This may vary depending on your specific scene. Feel free to tinker.
 -  Press the blue "RESCALE" button. 
 -  The scripted skydome will now engulf your scene, with a custom zone entity built-in and created automatically with the same dimensions as the dome.
 
