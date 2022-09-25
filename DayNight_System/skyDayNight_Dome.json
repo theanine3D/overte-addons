@@ -51,7 +51,7 @@
             "angularDamping": 0,
             "collisionless": true,
             "ignoreForCollisions": true,
-            "modelURL": "G:\\Documents\\Programming\\Overte\\Day and Night System\\export\\sky_DayNight_sunmoon.fbx",
+            "modelURL": "https://theanine3d.github.io/DayNight_System/models/sky_DayNight_sunmoon.fbx",
             "jointRotationsSet": [
                 false,
                 false,
