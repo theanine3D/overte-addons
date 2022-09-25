@@ -27,7 +27,6 @@ In order to add your own custom pet species to the app, you will need to create 
 - Lastly, modify the species list in the pets.js script, at (around) line 69, where the LIST_SPECIES variable is set. Add your new species to the array as an additional entry. As long as you named the PNG and FBX files above using the correct filename, the script will find them and use them appropriately.
 
 ## Day/Night System 
-![Animated GIF of cloudy night sky](https://puu.sh/JmXAk/f76f74bd4a.gif)
 ![image](https://user-images.githubusercontent.com/88953117/192127729-305ca563-9ff8-4f4c-a45f-c06d2737f8cd.png)
 
 This is a scripted day/night system for  [Overte](https://overte.org/). Setup is designed to be as simple as possible, easy enough for those who don't code. Once setup in the scene, the script will automatically modify the sky/lighting throughout the scene, based on your local time of day.
