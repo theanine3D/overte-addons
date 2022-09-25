@@ -48,7 +48,7 @@ To add this day/night system to your scene:
 
 ###### CUSTOMIZATION
 The script offers some customization options, for those who don't like the default settings. However, you will need to download the .js script and host it yourself somewhere if you want to tweak the settings. Find the "CUSTOMIZATION" section in the .js file to find these settings:
-- cloudSpeed - increase this to make the clouds scroll faster
-- cycleSpeed - Increase this value if you want faster day/night transitions than the real world, instead of every 24 hours
-- useClouds - set to false if you don't want clouds during daytime
-- useCustomZone - set this to false if you don't want scene lighting to actually be modified based on night/day. Set to true by default.
+- cloudSpeed - increase this to make the clouds scroll faster. Default is "1"
+- cycleSpeed - Increase this value if you want faster day/night transitions than the real world, instead of every 24 hours. Default is "1"
+- useClouds - set to false if you don't want clouds during daytime. Default is "true"
+- useCustomZone - set this to false if you don't want scene lighting to actually be modified based on night/day. Default is "true"
