@@ -29,11 +29,13 @@ In order to add your own custom pet species to the app, you will need to create 
 ## Day/Night System 
 ![Animated GIF of cloudy night sky](https://puu.sh/JmXAk/f76f74bd4a.gif)
 
-This is a scripted day/night system for  [Overte](https://overte.org/). Once placed in the scene, it will automatically modify the sky/zone/lighting throughout the scene, based on your local time of day. Currently, it only supports local client time, so the appearance of the scene will differ based on the time zone of every individual connecting to the domain. (ie. a visitor from Asia might see nighttime, but someone in N. America will see daytime).
+This is a scripted day/night system for  [Overte](https://overte.org/). Once placed in the scene, it will automatically modify the sky/zone/lighting throughout the scene, based on your local time of day.
+
+Note: currently, the script only supports local client time, so the appearance of the scene will differ based on the time zone of every individual connecting to the domain. (ie. a visitor from Asia might see nighttime, but someone in N. America will see daytime). This may change in the future.
 
 ###### INSTALLATION:
 To add this day/night system to your scene: 
-- You should delete* any existing zone entities in your scene, as they'll override the one created by this script.
+- You should delete any existing zone entities in your scene, as they'll override the one created by this script.
   - (Note: this step can skipped if you customized the script and set variable "useCustomZone" to false, as described below in the Customization section. However, most people should follow this step.)
 - In Overte, go into Edit -> Import Entities (.json) From a URL
 - Copy/paste [this link](https://theanine3d.github.io/DayNight_System/skyDayNight_Dome.json) into the text box that pops up, and press OK.
