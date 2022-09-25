@@ -195,7 +195,7 @@
             "blendshapeCoefficients": "{\n}\n",
             "useOriginalPivot": true,
             "animation": {
-                "url": "file:///G:/Documents/Programming/Overte/Day and Night System/export/sky_DayNight_skydome_idle.fbx",
+                "url": "https://theanine3d.github.io/DayNight_System/models/sky_DayNight_skydome_idle.fbx",
                 "allowTranslation": false,
                 "fps": 24,
                 "currentFrame": 8213.86328125,
