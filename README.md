@@ -26,7 +26,6 @@ In order to add your own custom pet species to the app, you will need to create 
 - To use randomized colors, make sure your pet's FBX model has at least 1 material called **colors**. The pet can have other materials too, but only the one named **colors** will actually be affected by the script. You can apply the colors.png texture in /assets/pets/ to help you UVmap the texture correctly in Blender or other 3D app. Note that color 0 is the default color, without any modifications. Colors 1-9 are hue-shifted (by .1) versions of color 0
 - Lastly, modify the species list in the pets.js script, at (around) line 69, where the LIST_SPECIES variable is set. Add your new species to the array as an additional entry. As long as you named the PNG and FBX files above using the correct filename, the script will find them and use them appropriately.
 
-
 ## Day/Night System 
 ![Animated GIF of cloudy night sky](https://puu.sh/JmXAk/f76f74bd4a.gif)
 
