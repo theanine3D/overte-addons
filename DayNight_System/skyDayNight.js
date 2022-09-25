@@ -17,27 +17,35 @@
 
     var skydomeID = Entities.getEntityProperties(this).entityID;
     var sunmoonID;
+    var unclearedEntities = [];
 
     // find the sun/moon model and store its ID
     function findSunMoon() {
         unclearedEntities = Entities.getChildrenIDs(skydomeID);
-        var foundIt = false;
+        // var foundIt = false;
         for (var i = 0; i < unclearedEntities.length; i++) {
             if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_SunMoon") !== -1) {
-                if (!foundIt) {
-                    sunmoonID = Entities.getEntityProperties(unclearedEntities[i]).id;
-                    foundIt = true;
-                }
+                // if (!foundIt) {
+                sunmoonID = Entities.getEntityProperties(unclearedEntities[i]).id;
+                // foundIt = true;
+                // }
             }
         }
     }
 
     // delete dupe materials
     function cleanupEntities() {
-        var unclearedEntities = [];
+        unclearedEntities = [];
         unclearedEntities = Entities.findEntitiesByType("Material", Entities.getEntityProperties(skydomeID).position, 1000);
         for (var i = 0; i < unclearedEntities.length; i++) {
-            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") != -1) {
+            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Mat") !== -1) {
+                Entities.deleteEntity(unclearedEntities[i]);
+            }
+        }
+        unclearedEntities = null;
+        unclearedEntities = Entities.findEntitiesByType("Zone", Entities.getEntityProperties(skydomeID).position, 1000);
+        for (var i = 0; i < unclearedEntities.length; i++) {
+            if (Entities.getEntityProperties(unclearedEntities[i]).name.indexOf("sky_DayNight_Zone") !== -1) {
                 Entities.deleteEntity(unclearedEntities[i]);
             }
         }
@@ -48,28 +56,133 @@
         return low2 + (high2 - low2) * (value - low1) / (high1 - low1);
     }
 
+    function lerp(i, a, b) {
+        // i - your current value (between 0 - c)
+        // a - beginning position
+        // b - ending position
+        // c - the maximum possible value
+        if (a > b) {
+            c = a;
+        }
+        else {
+            c = b;
+        }
+        return b + ((i / c) * (e - b));
+    }
+
+
     this.preload = function (entityID) {
         this.entityID = entityID;
         skydomeID = this.entityID;
-        // Window.alert("Entity ID: " + this.entityID);
         findSunMoon();
     };
+
+    // CUSTOMIZATION - modify the variables below to tweak how the day/night transition works
+    var cloudSpeed = 1;       // increase to make the clouds move faster
+    var cycleSpeed = 1;   // 1 = a single day/night transition for every real-world 24 hours. Increase it if you want faster transitions than the real world
+    var useClouds = true;   // set to false if you don't want clouds during daytime
+    var useCustomZone = true; // set to false if you don't want scene lighting to actually be modified based on night/day. If set to true, you should delete existing zone entities in your scene
+
+    // NIGHT TIME ZONE SETTINGS
+    var zoneSettingsDay = {
+        "keyLight": {
+            "color": {
+                "red": 252,
+                "green": 175,
+                "blue": 139
+            },
+            "intensity": 1.8,
+            "direction": {
+                "x": 0,
+                "y": -1,
+                "z": 0.0
+            },
+            "castShadows": true,
+            "shadowBias": 0.25
+        },
+        "ambientLight": {
+            "ambientIntensity": 0.2,
+            "ambientURL": ambientURL
+        },
+        "haze": {
+            "hazeRange": 200,
+            "hazeColor": {
+                "red": 31,
+                "green": 31,
+                "blue": 31
+            },
+            "hazeGlareColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "hazeEnableGlare": true,
+            "hazeGlareAngle": 40,
+            "hazeAltitudeEffect": true,
+            "hazeCeiling": 90,
+            "hazeBackgroundBlend": 0.55
+        },
+        "bloom": {
+            "bloomIntensity": 0.1
+        }
+    };
+
+    // DAY TIME ZONE SETTINGS
+    var zoneSettingsNight = {
+        "keyLight": {
+            "color": {
+                "red": 139,
+                "green": 188,
+                "blue": 252
+            },
+            "intensity": 1.8,
+            "direction": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+            },
+            "castShadows": true,
+            "shadowBias": 0.25
+        },
+        "ambientLight": {
+            "ambientIntensity": 0.2,
+            "ambientURL": ambientURL
+        },
+        "haze": {
+            "hazeRange": 200,
+            "hazeColor": {
+                "red": 31,
+                "green": 31,
+                "blue": 31
+            },
+            "hazeGlareColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "hazeEnableGlare": true,
+            "hazeGlareAngle": 40,
+            "hazeAltitudeEffect": true,
+            "hazeCeiling": 90,
+            "hazeBackgroundBlend": 0.5500000
+        },
+        "bloom": {
+            "bloomIntensity": 0.10000000
+        }
+    };
+
+
+    // END CUSTOMIZATION
 
     // SETUP VARIABLES
     var currentTime = new Date();
 
     const secondsInADay = 86400;
     var seconds = ((currentTime.getMinutes() + (currentTime.getHours() * 60)) * 60) + currentTime.getSeconds();
-    var timeProgress = (seconds / secondsInADay) % 1;
+    timeProgress = ((seconds / secondsInADay) % 1) * cycleSpeed;
 
     var nightAlpha = 0;
 
-    // CUSTOMIZATION - modify the variables below to tweak how the day/night transition works
-    const cloudSpeed = 1;       // increase to make the clouds move faster
-    var cycleSpeed = 1;   // 1 = a single day/night transition for every real-world 24 hours. Increase it if you want faster transitions than the real world
-    var useClouds = true;   // set to false if you don't want clouds during daytime
-    var useCustomZone = true; // set to false if you don't want scene lighting to actually be modified based on night/day. If set to true, you should delete existing zone entities in your scene
-    // END CUSTOMIZATION
 
     var jsMainFileName = "skyDayNight.js";
     var ROOT = Script.resolvePath('').split(jsMainFileName)[0];
@@ -79,6 +192,7 @@
     var animURL = ROOT + "models/sky_DayNight_skydome_idle.fbx";
 
     var gradientsURL = ROOT + "textures/skyGradients.png";
+    var ambientURL = ROOT + "textures/skyAmbient.png";
     var cloudsURL = ROOT + "textures/skyClouds.png";
     var starsURL = ROOT + "textures/skyStars.png";
     var sunURL = ROOT + "textures/skySun.png";
@@ -192,10 +306,63 @@
         }, "domain");
 
 
+    // ADD ZONE ENTITY
+    if (useCustomZone) {
+        var zoneID = Entities.addEntity(
+            {
+                "type": "Zone",
+                "name": "sky_DayNight_Zone",
+                "dimensions": Entities.getEntityProperties(skydomeID).dimensions,
+                "parentID": skydomeID,
+                "rotation": {
+                    "x": 0,
+                    "y": 0,
+                    "z": 0,
+                    "w": 1
+                },
+                "localPosition": { x: 0, y: 0, z: 0 },
+                "queryAACube": {
+                    "x": -433,
+                    "y": -433,
+                    "z": -433,
+                    "scale": 866
+                },
+                "grab": {
+                    "grabbable": false,
+                    "equippableLeftRotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0,
+                        "w": 1
+                    },
+                    "equippableRightRotation": {
+                        "x": 0,
+                        "y": 0,
+                        "z": 0,
+                        "w": 1
+                    }
+                },
+                "shapeType": "sphere",
+                "clientOnly": false,
+                "avatarEntity": false,
+                "localEntity": false,
+                "faceCamera": false,
+                "isFacingAvatar": false,
+            }, "domain");
+
+        Entities.editEntity(zoneID,
+            {
+                "parentID": skydomeID
+            }
+        )
+    }
+
+
     // UPDATE SUN and MOON MODEL ENTITY
     Entities.editEntity(sunmoonID,
         {
             "type": "Model",
+            "parentID": skydomeID,
             "damping": 0,
             "angularDamping": 0,
             "collisionless": true,
@@ -322,8 +489,7 @@
     function updateDayNight() {
         currentTime = new Date();
         seconds = ((currentTime.getMinutes() + (currentTime.getHours() * 60)) * 60) + currentTime.getSeconds();
-        timeProgress = (seconds / secondsInADay) % 1;
-        // print(timeProgress);
+        timeProgress = ((seconds / secondsInADay) % 1) * cycleSpeed;
 
         // update the sun / moon rotation via bone manipulation
         Entities.editEntity(sunmoonID, {
@@ -513,6 +679,69 @@
                     ]
                 })
             });
+
+        // Calculate sun angles
+        var sunAngleVertical = 0;
+        var sunAngleHorizontal = 0;
+        // var sunAngleHorizontal = ((-0.8 - -1) * Math.sin(timeProgress) + -0.8 - 1) / 2;     // TODO
+        if (timeProgress <= .25) {
+            sunAngleVertical = map_range((timeProgress), 0, .25, -1, -.7);
+            sunAngleHorizontal = map_range((timeProgress), 0, .25, 0, .7);
+        }
+        if (timeProgress > .25 && timeProgress < 0.5) {
+            sunAngleVertical = map_range((timeProgress), 0.25, .5, -.7, -1)
+            sunAngleHorizontal = map_range((timeProgress), 0.25, .5, .7, 0);
+        }
+        if (timeProgress > 0.5 && timeProgress < 0.75) {
+            sunAngleVertical = map_range((timeProgress), 0.5, .75, -1, -.7);
+            sunAngleHorizontal = map_range((timeProgress), 0.5, .75, 0, .7);
+
+        }
+        if (timeProgress > 0.75 && timeProgress < 1) {
+            sunAngleVertical = map_range((timeProgress), 0.75, 1, -.7, -1);
+            sunAngleHorizontal = map_range((timeProgress), 0.75, 1, .7, 0);
+        }
+
+        // timeProgress = 0, angle -1
+        // timeProgress = .25, angle -0.8
+        // timeProgress = .5, angle -1
+        // timeProgress = .75, angle -0.8
+
+        // update the ZONE ENTITY, based on current time of day
+        Entities.editEntity(zoneID,
+            {
+                "parentID": skydomeID,
+                "dimensions": Entities.getEntityProperties(skydomeID).dimensions,
+                "localPosition": { x: 0, y: 0, z: 0 },
+                "keyLight": {
+                    "color": {
+                        "red": ((zoneSettingsDay.keyLight.color.red * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.red * (nightAlpha))),
+                        "green": ((zoneSettingsDay.keyLight.color.green * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.green * (nightAlpha))),
+                        "blue": ((zoneSettingsDay.keyLight.color.blue * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.blue * (nightAlpha))),
+                    },
+                    "intensity": 1.8,
+                    "direction": {
+                        "x": sunAngleVertical,
+                        "y": sunAngleVertical,
+                        "z": sunAngleHorizontal
+                    },
+                    "castShadows": true,
+                    "shadowBias": 0.25
+                },
+                "ambientLight": {
+                    "ambientIntensity": 0.2,
+                    "ambientURL": ambientURL
+                },
+                "bloom": {
+                    "bloomIntensity": 0.1
+                },
+                "keyLightMode": "enabled",
+                "ambientLightMode": "enabled",
+                "skyboxMode": "enabled",
+                "hazeMode": "disabled",
+                "bloomMode": "enabled",
+            });
+
 
     }
 
