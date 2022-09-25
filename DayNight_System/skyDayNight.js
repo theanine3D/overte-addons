@@ -699,41 +699,42 @@
             sunAngleHorizontal = map_range((timeProgress), 0.75, 1, .7, 0);
         }
 
-        // update the ZONE ENTITY, based on current time of day
-        Entities.editEntity(zoneID,
-            {
-                "parentID": skydomeID,
-                "dimensions": Entities.getEntityProperties(skydomeID).dimensions,
-                "localPosition": { x: 0, y: 0, z: 0 },
-                "keyLight": {
-                    "color": {
-                        "red": ((zoneSettingsDay.keyLight.color.red * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.red * (nightAlpha))),
-                        "green": ((zoneSettingsDay.keyLight.color.green * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.green * (nightAlpha))),
-                        "blue": ((zoneSettingsDay.keyLight.color.blue * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.blue * (nightAlpha))),
+        if (useCustomZone) {
+            // update the ZONE ENTITY, based on current time of day
+            Entities.editEntity(zoneID,
+                {
+                    "parentID": skydomeID,
+                    "dimensions": Entities.getEntityProperties(skydomeID).dimensions,
+                    "localPosition": { x: 0, y: 0, z: 0 },
+                    "keyLight": {
+                        "color": {
+                            "red": ((zoneSettingsDay.keyLight.color.red * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.red * (nightAlpha))),
+                            "green": ((zoneSettingsDay.keyLight.color.green * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.green * (nightAlpha))),
+                            "blue": ((zoneSettingsDay.keyLight.color.blue * (1 - nightAlpha)) + (zoneSettingsNight.keyLight.color.blue * (nightAlpha))),
+                        },
+                        "intensity": 1.8,
+                        "direction": {
+                            "x": sunAngleVertical,
+                            "y": sunAngleVertical,
+                            "z": sunAngleHorizontal
+                        },
+                        "castShadows": true,
+                        "shadowBias": 0.25
                     },
-                    "intensity": 1.8,
-                    "direction": {
-                        "x": sunAngleVertical,
-                        "y": sunAngleVertical,
-                        "z": sunAngleHorizontal
+                    "ambientLight": {
+                        "ambientIntensity": 0.2,
+                        "ambientURL": ambientURL
                     },
-                    "castShadows": true,
-                    "shadowBias": 0.25
-                },
-                "ambientLight": {
-                    "ambientIntensity": 0.2,
-                    "ambientURL": ambientURL
-                },
-                "bloom": {
-                    "bloomIntensity": 0.1
-                },
-                "keyLightMode": "enabled",
-                "ambientLightMode": "enabled",
-                "skyboxMode": "enabled",
-                "hazeMode": "disabled",
-                "bloomMode": "enabled",
-            });
-
+                    "bloom": {
+                        "bloomIntensity": 0.1
+                    },
+                    "keyLightMode": "enabled",
+                    "ambientLightMode": "enabled",
+                    "skyboxMode": "enabled",
+                    "hazeMode": "disabled",
+                    "bloomMode": "enabled",
+                });
+        }
 
     }
 
