@@ -1,5 +1,5 @@
 ## Pets
-![Screenshot of Pets app](https://puu.sh/Jlyaj/56759d0851.png)
+![image](https://user-images.githubusercontent.com/88953117/232934815-b8918be4-7b4a-4482-a574-522b6ede476d.png)
 
 This is a tablet app for the [Overte](https://overte.org/) social VR platform that allows you to create a 3D pet that follows and accompanies you. Each pet is animated, and its colors are randomly generated upon creation.
 
