@@ -2,7 +2,7 @@
 My personal collection of scripts, shaders, and addons for the open source social VR platform, [Overte](https://overte.org/).
 
 ## Bridge Server
-A WebSockets server script that runs within an existing Overte domain server (via assignment client). The bridge server provides a friendly WebSockets API for other software to connect to the domain server and interact with it. For now, instructions to set it up are primarily found in the script itself, but you can add it to your domain server via the server's web-based settings panel ("Content" -> Scripts). Blender bridge functionality still needs to be implemented.
+A work-in-progress WebSockets server script that runs within an existing Overte domain server (via assignment client). The bridge server provides a friendly WebSockets API for other software to connect to the domain server and interact with it. For now, instructions to set it up are primarily found in the script itself, but you can add it to your domain server via the server's web-based settings panel ("Content" -> Scripts). Blender bridge functionality still needs to be implemented. Note: extremely alpha and in need of more testing, so do not use in a production environment yet.
 
 ## Pets
 ![image](https://user-images.githubusercontent.com/88953117/232934794-178226a0-a672-4331-b185-b22624331f37.png)
