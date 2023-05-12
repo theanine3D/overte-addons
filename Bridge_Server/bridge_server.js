@@ -560,10 +560,17 @@ function setModel(UUID_string, modelname_string, role, identity) {
     return status;
 }
 
+// TODO: Implement Blender bridge functions
 function jsonToBlender(identity) {
     var socket = identity.socket;
+}
 
+function jsonToBridge(identity) {
+    var socket = identity.socket;
+}
 
+function syncUUID(identity) {
+    var socket = identity.socket;
 }
 
 function updateStatus(status, identity = undefined) {
