@@ -4,7 +4,7 @@ My personal collection of scripts, shaders, and addons for the open source socia
 ## Bridge Server
 A work-in-progress WebSockets server script that runs within an existing Overte domain server (via assignment client). The bridge server provides a friendly WebSockets API for other software, engines, and platforms to connect to the Overte domain server and interact with it. For now, instructions to set it up are primarily found in the script itself, but you can add it to your domain server via the server's web-based settings panel ("Content" -> Scripts). Note: extremely alpha and in need of more testing, so do not use in a production environment yet.
 
-Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed.
+Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed. I am waiting for this issue to be addressed before proceeding further with the script.
 
 Roadmap:
 - Implement Blender bridge functions to enable use of Blender as the sole scene editing tool for Overte 
