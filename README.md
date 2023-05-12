@@ -9,7 +9,7 @@ Currently, Overte randomizes the port of every WebSocketsServer, making this scr
 Roadmap:
 - Implement Blender bridge functions to enable use of Blender as the sole scene editing tool for Overte 
 - Implement Agent API commands for creating an in-world bot, to allow visitors from other virtual worlds
-- Implement AI functions for GPT4All integration, allowing in-world bots to listen and respond to messages from users
+- Implement GPT4All integration, allowing in-world bots to listen and respond to messages from users
 
 ## Pets
 ![image](https://user-images.githubusercontent.com/88953117/232934794-178226a0-a672-4331-b185-b22624331f37.png)
