@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1
+// Overte Bridge Server - v0.1.1
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -275,6 +275,11 @@ const OPERATIONS = {
             ]
     },
     "Admin": {
+        "run":
+            ["Run any Overte API command (warning: risky)",
+                "adminRun(function_string,identity)",
+                "function_string",
+                "a"],
         "shutdown":
             ["Shutdown the bridge server",
                 "webSocketServer.close(); connectedClients = []; tempModels = []; tempMeshes = []",
@@ -308,8 +313,8 @@ const OPERATIONS = {
 const OPERATONS_HIDDEN = {
     "Blender":
     {
-        "jsonToBlender": "range,position,type",
-        "jsonToBridge": "range,position,type",
+        "json2Blender": "range,position,type",
+        "json2Bridge": "range,position,type",
         "syncUUID": "entities_array"
 
     },
@@ -561,11 +566,11 @@ function setModel(UUID_string, modelname_string, role, identity) {
 }
 
 // TODO: Implement Blender bridge functions
-function jsonToBlender(identity) {
+function json2Blender(identity) {
     var socket = identity.socket;
 }
 
-function jsonToBridge(identity) {
+function json2Bridge(identity) {
     var socket = identity.socket;
 }
 
@@ -728,8 +733,15 @@ function pick_operation(json, role, identity) {
 
     // Generate list of available operations
     for (category of Object.keys(OPERATIONS)) {
+
         prompt += "* " + category.toUpperCase() + "*\n";
+
         for (op of Object.keys(OPERATIONS[category])) {
+
+            if (!CHAT_ENABLED && OPERATIONS[category][op][3] === "c") { continue; }
+            if ((!VISIT_ENABLED) && OPERATIONS[category][op][3] === "v" && ROLES[role][1].indexOf("v") > -1) { continue; }
+            if (!EDIT_ENABLED && OPERATIONS[category][op][3] === "w") { continue; }
+
             // Check if client's role has permission to perform this operation, and if so, add it to the list
             if (ROLES[role][1].indexOf(OPERATIONS[category][op][3])) {
                 prompt += op + "\t-\t" + OPERATIONS[category][op][0] + "\t-\tParameters: " + OPERATIONS[category][op][2] + "\n";
@@ -788,7 +800,14 @@ function pick_operation(json, role, identity) {
             }
         }
         cmd += ")";
+
+        // Special case for admin 'run' command
+        if ((command === "run") && (ROLES[role][1].indexOf("a") > -1)) {
+            cmd = params[0];
+        }
+
         const run = new Function(cmd);
+
         // Try running the constructed command and catch any errors
         try {
             run();
@@ -820,8 +839,8 @@ if (!listening) { return; }     // If "listening" is set to false, exit instead 
 updateStatus(STATUSES["starting"]);
 var webSocketServer = ((PORT > 0) ? new WebSocketServer(PORT) : new WebSocketServer());       // If PORT is 0, just randomize it.
 SERVER_URL = webSocketServer.url;
-print("Server URL:", SERVER_URL);
-print("Server Port:", webSocketServer.port);
+print("Bridge Server URL:", SERVER_URL);
+print("Bridge Server Port:", webSocketServer.port);
 updateStatus(STATUSES["on"] + " on port " + webSocketServer.port);
 
 function onNewConnection(webSocket) {
