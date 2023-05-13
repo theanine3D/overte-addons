@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1.1
+// Overte Bridge Server - v0.1.2
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -16,13 +16,13 @@ const ADMIN_PASSWORD = "S0r4jq6owj";
 const USER_PASSWORD = "3dpUcn6C1H";
 
 // GENERAL SETTINGS
-var listening = true;                               // If set to false, the bridge server will go offline.
-var verbose = true;                                 // If true, the bridge server will repeatedly send out messages on the messaging server of its current status, which entities in-world can receive
-var local_only = false;                             // If true, only localhost can connect to bridge. Recommended if only connecting with Blender on same machine as bridge server
+let listening = true;                               // If set to false, the bridge server will go offline.
+let verbose = true;                                 // If true, the bridge server will repeatedly send out messages on the messaging server of its current status, which entities in-world can receive
+let local_only = false;                             // If true, only localhost can connect to bridge. Recommended if only connecting with Blender on same machine as bridge server
 
-const STATUS_CHANNEL = "bridge.status";  // Status messages about the bridge server, available to in-world entities
-const CHAT_CHANNEL = "bridge.chat";      // Channel for chat messages exchanged between server/client(s)
-const AI_CHANNEL = "bridge.ai";          // AI bot messages. In-world NPC bots can be scripted to listen on this channel
+const STATUS_CHANNEL = "bridge.status";             // Status messages about the bridge server, available to in-world entities
+const CHAT_CHANNEL = "bridge.chat";                 // Channel for chat messages exchanged between server/client(s)
+const AI_CHANNEL = "bridge.ai";                     // AI bot messages. In-world NPC bots can be scripted to listen on this channel
 
 const PORT = 59999;                                 // If set to 0, the port will be randomized every time the script begins running (not recommended))
 const DOMAIN_NAME = "Overte World";                 // A name for your server - can be anything. Primarily used in the server's greeting message when a new client connects.
@@ -355,10 +355,10 @@ const welcome_msg =
 // END OF CUSTOMIZEABLE SETTINGS
 //
 
-var connectedClients = [];
-var tempMeshes = {};
-var tempModels = {};
-var SERVER_URL = "";
+let connectedClients = [];
+let tempMeshes = {};
+let tempModels = {};
+let SERVER_URL = "";
 
 const crypt = (salt, text) => {
     if (ENCRYPTED) {
@@ -394,18 +394,18 @@ const decrypt = (salt, encoded) => {
     }
 };
 
-function sanitizeString(str) {
+function sanitizeString(text) {
     return text.replace(/[^a-zA-Z0-9 ]/g, '');
 }
-function isValidIP(str) {
+function isValidIP(text) {
 
     // Localhost is always valid
-    if (str.indexOf("localhost") > -1) {
+    if (text.indexOf("localhost") > -1) {
         return true;
     }
 
     const regex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    result = regex.test(str);
+    result = regex.test(text);
 
     // If Local Only is enabled, check if it's the same IP as the server itself
     if (local_only) {
@@ -418,21 +418,21 @@ function isValidIP(str) {
 
 function toggleVerbosity(identity) {
     verbose = !(verbose);
-    var status = "Verbose mode now " + ((verbose === true) ? "ON" : "OFF");
+    let status = "Verbose mode now " + ((verbose === true) ? "ON" : "OFF");
     updateStatus(status, identity);
     return status;
 }
 
 function toggleListening(identity) {
     listening = !(listening);
-    var status = "Listening is now " + ((listening === true) ? "ENABLED" : "DISABLED");
+    let status = "Listening is now " + ((listening === true) ? "ENABLED" : "DISABLED");
     updateStatus(status, identity);
     return status;
 }
 
 function toggleLocalonly(identity) {
     local_only = !(local_only);
-    var status = "Bridge is now open " + ((local_only === true) ? "only to the localhost" : "to everyone");
+    let status = "Bridge is now open " + ((local_only === true) ? "only to the localhost" : "to everyone");
     updateStatus(status, identity);
     return status;
 }
@@ -448,12 +448,12 @@ function handshake(json, socket) {
 
                 // Remove all special characters (except spaces) from the username first.
                 // Admins can optionally add a word filter here to filter out offensive words
-                var sanitized_name = sanitizeString(json.userName);
+                let sanitized_name = sanitizeString(json.userName);
 
                 // Validate the IP address
                 if (isValidIP(json.ipAddress)) {
 
-                    var identity = {
+                    let identity = {
                         "userName": sanitized_name,
                         "ipAddress": json.ipAddress,
                         "clientType": json.clientType,
@@ -474,13 +474,13 @@ function handshake(json, socket) {
 }
 
 function handleAsset(data, binaryOn, path, identity, mode) {
-    var data_info = {
+    let data_info = {
         data: ((binaryOn) ? btoa(data_string) : data_string)``,
         path: path
     }
     function status_callback(error, result) {
         if (error) {
-            var errmsg = 'ERROR: Data not ' + mode + 'ed or mapping not set';
+            let errmsg = 'ERROR: Data not ' + mode + 'ed or mapping not set';
             updateStatus(errmsg);
             identity.socket.send(errmsg);
         } else {
@@ -503,7 +503,7 @@ function handleAsset(data, binaryOn, path, identity, mode) {
 
 function createMesh(meshname_string, vert_indices_num_array, vert_positions_vec3_array, vert_normals_vec3_array, vert_colors_vec3_array, texcoords0_vec2_array, identity) {
     if (meshname_string in tempMeshes) {
-        var last_char = meshname_string.slice(-1);
+        let last_char = meshname_string.slice(-1);
         if (isNaN(last_char)) {
             meshname_string += "2";
         }
@@ -512,7 +512,7 @@ function createMesh(meshname_string, vert_indices_num_array, vert_positions_vec3
         }
     }
 
-    var ifsMeshData = {
+    let ifsMeshData = {
         name: meshname_string,
         topology: "triangles",  // Triangles are the only option currently supported by Overte
         indices: vert_indices_num_array,
@@ -521,10 +521,10 @@ function createMesh(meshname_string, vert_indices_num_array, vert_positions_vec3
         colors: vert_colors_vec3_array,
         texCoords0: texcoords0_vec2_array
     }
-    var tempMesh = Graphics.newMesh(ifsMeshData);
+    let tempMesh = Graphics.newMesh(ifsMeshData);
     tempMeshes[meshname_string] = tempMesh;
 
-    var status = STATUSES["newMesh"] + " with name " + ifsMeshData.name;
+    let status = STATUSES["newMesh"] + " with name " + ifsMeshData.name;
 
     updateStatus(status, identity);
     return status;
@@ -532,7 +532,7 @@ function createMesh(meshname_string, vert_indices_num_array, vert_positions_vec3
 
 function createModel(meshname_string_array, modelname_string, identity) {
     if (modelname_string in tempModels) {
-        var last_char = modelname_string.slice(-1);
+        let last_char = modelname_string.slice(-1);
         if (isNaN(last_char)) {
             modelname_string += "2";
         }
@@ -541,10 +541,10 @@ function createModel(meshname_string_array, modelname_string, identity) {
         }
     }
 
-    var tempModel = Graphics.newModel(meshname_string_array);
+    let tempModel = Graphics.newModel(meshname_string_array);
     tempModels[modelname_string] = tempModel;
 
-    var status = STATUSES["newModel"] + " with name " + modelname_string;
+    let status = STATUSES["newModel"] + " with name " + modelname_string;
 
     updateStatus(status, identity);
     return status;
@@ -560,28 +560,28 @@ function setModel(UUID_string, modelname_string, role, identity) {
 
     Graphics.updateModel(UUID_string, modelname_string);
 
-    var status = STATUSES["updatedModel"] + " of entity named '" + Entities.getEntityProperties(UUID_string, ["name"]) + "'";
+    let status = STATUSES["updatedModel"] + " of entity named '" + Entities.getEntityProperties(UUID_string, ["name"]) + "'";
     updateStatus(status, identity);
     return status;
 }
 
 // TODO: Implement Blender bridge functions
 function json2Blender(identity) {
-    var socket = identity.socket;
+    let socket = identity.socket;
 }
 
 function json2Bridge(identity) {
-    var socket = identity.socket;
+    let socket = identity.socket;
 }
 
 function syncUUID(identity) {
-    var socket = identity.socket;
+    let socket = identity.socket;
 }
 
 function updateStatus(status, identity = undefined) {
 
     if (verbose) {
-        var timestamp = new Date();
+        let timestamp = new Date();
 
         // Check if client identity was provided, and if so, append it to the status message
         if (identity !== undefined) {
@@ -608,7 +608,7 @@ function chat(msg, identity, recipient) {
 
     Messages.sendMessage(CHAT_CHANNEL, msg, false);
 
-    var status = ((recipient === "clients") ? STATUSES["sentChat"] : STATUSES["gotChat"]);
+    let status = ((recipient === "clients") ? STATUSES["sentChat"] : STATUSES["gotChat"]);
     updateStatus(status, identity);
 
 }
@@ -636,13 +636,13 @@ function parseJSON(message, socket) {
 
 
 function incorrectCmd(socket) {
-    var error = "ERROR: Incorrect input received.";
+    let error = "ERROR: Incorrect input received.";
     socket.send(error);
     print(error);
 }
 
 function closeSocket(identity, reason = "") {
-    var socket = identity.socket;
+    let socket = identity.socket;
     socket.send(reason);
     print(reason);
     updateStatus("Connection closed because: " + reason);
@@ -653,8 +653,8 @@ function closeSocket(identity, reason = "") {
 // USER PROMPT MENUS
 
 function pick_role(json, identity) {
-    var socket = identity.socket;
-    var role = -1;
+    let socket = identity.socket;
+    let role = -1;
 
     // Check if this is a command line client
     if (identity.clientType === "CLI") {
@@ -680,7 +680,7 @@ function pick_role(json, identity) {
     if (role === -1) {
         identity.socket.send("Please select a role below.")
         for (r of ROLES) {
-            var role_description = ROLES.indexOf(r) + " - " + r[0];
+            let role_description = ROLES.indexOf(r) + " - " + r[0];
             identity.socket.send(role_description);
         }
     }
@@ -688,7 +688,7 @@ function pick_role(json, identity) {
 }
 
 function authenticate(json, role, identity, attempts) {
-    var socket = identity.socket;
+    let socket = identity.socket;
 
     // If client has already attempted to login more than 3 times, notify the client and close the connection
     if (attempts > 3) { closeSocket(identity, "Too many incorrect login attempts."); return false; }
@@ -700,7 +700,7 @@ function authenticate(json, role, identity, attempts) {
         socket.send("Please enter the password.");
     }
 
-    var password = json.password;
+    let password = json.password;
 
     // Wrong password
     if (!(password === ROLES[role][2])) {
@@ -718,14 +718,14 @@ function authenticate(json, role, identity, attempts) {
 }
 
 function pick_operation(json, role, identity) {
-    var operation = undefined;
-    var command = undefined;
-    var params = [];
-    var socket = identity.socket;
-    var cli_mode = identity.clientType === "CLI";
-    var hidden_ops_enabled = (identity.clientType in OPERATIONS_HIDDEN);
-    var valid_operations = [];
-    var prompt = "Please pick a command from the list below.\n\n";
+    let operation = undefined;
+    let command = undefined;
+    let params = [];
+    let socket = identity.socket;
+    let cli_mode = identity.clientType === "CLI";
+    let hidden_ops_enabled = (identity.clientType in OPERATIONS_HIDDEN);
+    let valid_operations = [];
+    let prompt = "Please pick a command from the list below.\n\n";
 
     if (cli_mode) {
         json = { "operation": json };
@@ -792,7 +792,7 @@ function pick_operation(json, role, identity) {
     // Prepare to run the operation
     if (!(operation === undefined)) {
         // Construct the command
-        var cmd = command + "(";
+        let cmd = command + "(";
         for (p of params) {
             cmd += p;
             if (params.indexOf(p) !== (params.length - 1)) {
@@ -834,14 +834,12 @@ function pick_operation(json, role, identity) {
     return undefined;
 }
 
-if (!listening) { return; }     // If "listening" is set to false, exit instead of proceeding
+if (!listening) { throw { "name": "Disabled", "message": "Listening is disabled. Exiting..." }; }     // If "listening" is set to false, exit instead of proceeding
 
 updateStatus(STATUSES["starting"]);
-var webSocketServer = ((PORT > 0) ? new WebSocketServer(PORT) : new WebSocketServer());       // If PORT is 0, just randomize it.
+let webSocketServer = ((PORT > 0) ? new WebSocketServer(PORT) : new WebSocketServer());       // If PORT is 0, just randomize it.
 SERVER_URL = webSocketServer.url;
-print("Bridge Server URL:", SERVER_URL);
-print("Bridge Server Port:", webSocketServer.port);
-updateStatus(STATUSES["on"] + " on port " + webSocketServer.port);
+updateStatus(STATUSES["on"] + " at URL " + SERVER_URL);
 
 function onNewConnection(webSocket) {
 
@@ -850,14 +848,14 @@ function onNewConnection(webSocket) {
         closeSocket({ "socket": webSocket }, STATUSES["off"]);
     }
     // Setup variables for this client
-    var identity = undefined;
-    var handshake_valid = undefined;
-    var role = -1;
-    var authenticated = false;
-    var auth_attempts = 0;
-    var cli_mode = undefined;
-    var authenticate_result = undefined;
-    var operation = undefined;
+    let identity = undefined;
+    let handshake_valid = undefined;
+    let role = -1;
+    let authenticated = false;
+    let auth_attempts = 0;
+    let cli_mode = undefined;
+    let authenticate_result = undefined;
+    let operation = undefined;
 
     updateStatus(STATUSES["connected"]);
 
@@ -871,7 +869,7 @@ function onNewConnection(webSocket) {
 
     webSocket.onmessage = function (message) {
 
-        var msg_json = "";
+        let msg_json = "";
         msg_json = parseJSON(message, webSocket);
 
         // Check if handshake has happened yet, and if not, check the message for one
