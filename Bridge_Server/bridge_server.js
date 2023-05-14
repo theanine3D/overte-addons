@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1.2
+// Overte Bridge Server - v0.1.3
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -59,13 +59,13 @@ const CLIENT_TYPES = {
 //      Note: all roles have chat permissions
 //
 // PERMISSIONS:
-//      R = read
-//      W = write/edit
+//      Q = query
 //      C = chat
 //      V = visit
+//      E = edit
 //      A = admin
 //
-//      The "A" and "W" permissions will require that the client provide the correct (admin or user) password.
+//      The "A" and "E" permissions will require that the client provide the correct (admin or user) password.
 //
 //      In each nested array in the "ROLES" array below:
 //          Index 0 is the name of the role.
@@ -74,10 +74,10 @@ const CLIENT_TYPES = {
 //
 
 const ROLES = [
-    ["anonymous", "rc", ""],
-    ["visitor", "rcv", ""],
-    ["user", "rcvw", USER_PASSWORD],
-    ["admin", "rcvwa", ADMIN_PASSWORD]
+    ["anonymous", "qc", ""],
+    ["visitor", "qcv", ""],
+    ["user", "qcve", USER_PASSWORD],
+    ["admin", "qcvea", ADMIN_PASSWORD]
 ];
 
 const STATUSES = {
@@ -87,6 +87,12 @@ const STATUSES = {
     "closing": "Shutting down bridge",
     "connected": "Connected to new client",
     "disconnected": "Disconnected from client",
+    "sentRequest": "Sent request to client",
+    "gotRequest": "Got request from client",
+    "sentInfo": "Sent info to client",
+    "gotInfo": "Got info from client",
+    "sentData": "Sent data to client",
+    "gotData": "Got data from client",
     "wrongPass": "Failed login attempt",
     "rightPass": "Successful login",
     "gotBlend": "Data received from Blender",
@@ -99,7 +105,8 @@ const STATUSES = {
     "invalid": "Invalid request",
     "shakeFail": "Handshake failed",
     "shakeOK": "Handshake OK",
-    "wrongPerm": "Insufficient permissions"
+    "wrongPerm": "Insufficient permissions",
+    "cmdErr": "Command error"
 }
 
 //
@@ -120,188 +127,164 @@ const OPERATIONS = {
     {
         "countTotalAvatars":
             ["Get total avatar count",
-                "identity.socket.send(AvatarList.getAvatarIdentifiers().length)",
+                'sendToClient(AvatarList.getAvatarIdentifiers().length,"OUTPUT",identity)',
                 "",
-                "r"],
+            ],
         "countTotalClients":
             ["Get bridge client count",
-                "identity.socket.send(connectedClients.length)",
-                "",
-                "r"],
+                'sendToClient(connectedClients.length,"OUTPUT",identity)',
+                ""
+            ],
         "disconnect":
             ["Disconnect from the bridge server",
-                "identity.socket.send('Connection closed.'); identity.socket.close()",
-                "",
-                "r"]
+                'closeSocket("Client disconnected.",identity)',
+                ""
+            ]
     },
     "Chat":
     {
         "sendChat":
             ["Send chat message to bridge",
                 "chat(msg_string, identity, 'server')",
-                "msg_string",
-                "c"
+                "msg_string"
             ]
     },
     "Visit":
     {
         "getEntIDsByType":
-            ["Get all IDs of entities with specific TYPE, within distance of a specific position",
-                "identity.socket.send(Entities.findEntitiesByType(type_string,position_vec3,distance_int))",
-                "type_string, position_vec3,distance_int",
-                "v"]
-        ,
+            ["Get all IDs of entities of specific TYPE, within distance of a position",
+                'sendToClient(Entities.findEntitiesByType(type_string,position_vec3,distance_int),"OUTPUT",identity)',
+                "type_string, position_vec3,distance_int"
+            ],
         "getEntIDsByName":
-            ["Get all IDs of entities with specific NAME, within distance of a specific position",
-                "identity.socket.send(Entities.findEntitiesByName('Model',position_vec3,distance_int))",
-                "type_string, position_vec3,distance_int",
-                "v"
+            ["Get all IDs of entities with specific NAME, within distance of a position",
+                'sendToClient(Entities.findEntitiesByName("Model",position_vec3,distance_int),"OUTPUT",identity)',
+                "type_string, position_vec3,distance_int"
             ],
         "getEntDataByID":
             ["Get specific entity's data via UUID",
-                "getEntityInfo(UUID_string, identity)",
-                "UUID_string",
-                "v"
+                'sendToClient(Entities.getEntityProperties(UUID_string),"OUTPUT",identity)',
+                "UUID_string"
             ],
         "getAvatarIDs":
             ["Get all avatar IDs",
-                "identity.socket.send(AvatarList.getAvatarIdentifiers())",
-                "",
-                "v"
+                'sendToClient(AvatarList.getAvatarIdentifiers(),"OUTPUT",identity)',
+                ""
             ],
         "getAvatarDataByID":
             ["Get specific avatar's info",
-                "getAvatarInfo(UUID_string, identity)",
-                "UUID_string",
-                "v"
+                'sendToClient(AvatarList.getAvatar(UUID_string), "OUTPUT", identity)',
+                "UUID_string"
             ],
         "getAvatarsNearPosition":
             ["Get avatars within specific distance of a position",
-                "identity.socket.send(Avatar.getAvatarsInRange({x:x_int, y:y_int, z:z_int}, distance_int))",
-                "x_int,y_int,z_int,distance_int",
-                "v"
+                'sendToClient(Avatar.getAvatarsInRange({x:x_int, y:y_int, z:z_int}, distance_int),"OUTPUT",identity)',
+                "x_int,y_int,z_int,distance_int"
             ],
         "isAvatarNearPosition":
             ["Check if specific avatar within specific distance",
-                "identity.socket.send(Avatar.isAvatarInRange({x:x_int, y:y_int, z:z_int}, distance_int))",
-                "x_int,y_int,z_int,distance_int",
-                "v"
+                'sendToClient(Avatar.isAvatarInRange({x:x_int, y:y_int, z:z_int}, distance_int),"OUTPUT",identity)',
+                "x_int,y_int,z_int,distance_int"
             ],
-        "getModel":
+        "getModelByUUID":
             ["Get 3D model data via UUID",
-                "identity.socket.send(getModel(UUID_string))",
-                "UUID_string",
-                "v"
+                'sendToClient(Graphics.getModel(UUID_string),"OUTPUT",identity)',
+                "UUID_string"
             ],
-        "getTempMeshByName":
-            ["Get 3D mesh data via name",
-                "identity.socket.send(getTempModel(meshname_string))",
-                "modelname_string",
-                "v"
-            ],
-        "getTempModelByName":
+        "getModelByName":
             ["Get 3D model data via name",
-                "identity.socket.send(getTempModel(modelname_string))",
-                "modelname_string",
-                "v"
+                'sendToClient(getTempModel(modelname_string),"OUTPUT",identity)',
+                "modelname_string"
+            ],
+        "getMeshByName":
+            ["Get 3D mesh data via name",
+                'sendToClient(getTempMesh(meshname_string),"OUTPUT",identity)',
+                "meshname_string"
             ]
     },
     "Edit": {
         "addEnt":
             ["Add new entity to world",
-                "identity.socket.send(Entities.addEntity(properties_json))",
-                "properties_json",
-                "w"
+                'sendToClient(Entities.addEntity(properties_json),"OUTPUT",identity)',
+                "properties_json"
             ],
         "editEnt":
             ["Edit existing entity",
-                "identity.socket.send(Entities.editEntity(UUID, properties_json))",
-                "UUID,properties_json",
-                "w"
+                'sendToClient(Entities.editEntity(UUID_string, properties_json),"OUTPUT",identity)',
+                "UUID_string,properties_json"
             ],
         "delEnt":
             ["Delete existing entity",
-                "identity.socket.send(Entities.deleteEntity(UUID))",
-                "UUID_string",
-                "w"
+                'sendToClient(Entities.deleteEntity(UUID),"OUTPUT",identity)',
+                "UUID_string"
             ],
         "createMesh":
             ["Create 3D mesh from raw geometry data",
-                "identity.socket.send(createMesh(meshname_string,vert_indices_num_array,vert_positions_vec3_array,vert_normals_vec3_array,vert_colors_vec3_array,texcoords0_vec2_array,identity))",
+                'sendToClient(createMesh(meshname_string,vert_indices_num_array,vert_positions_vec3_array,vert_normals_vec3_array,vert_colors_vec3_array,texcoords0_vec2_array,identity),"INFO",identity)',
                 "meshname_string,vert_indices_num_array,vert_positions_vec3_array,vert_normals_vec3_array,vert_colors_vec3_array,texcoords0_vec2_array",
-                "w"
+                "e"
             ],
         "createModel":
             ["Create 3D model from an array of meshes",
-                "identity.socket.send(createModel(meshname_string_array,modelname_string,identity))",
-                "meshnames_string_array,modelname_string",
-                "w"
+                'createMesh(createModel(meshname_string_array,modelname_string,identity),"INFO",identity)',
+                "meshnames_string_array,modelname_string"
             ],
         "setModel":
             ["Set the 3D model of an existing entity",
-                "identity.socket.send(setModel(UUID_string,modelname_string,role,identity))",
-                "UUID_string,modelname_string",
-                "w"
+                'sendToClient(setModel(UUID_string,modelname_string,identity),"INFO",identity)',
+                "UUID_string,modelname_string"
             ],
         "getModelAsOBJ":
             ["Get 3D model data in OBJ format",
-                "identity.socket.send(Graphics.exportModelToOBJ(modelname_string))",
-                "modelname_string",
-                "w"
+                'sendToClient(Graphics.exportModelToOBJ(modelname_string),"OUTPUT",identity)',
+                "modelname_string"
             ],
         "getATPText":
             ["Download text data from ATP",
                 "handleAsset(data_string, false, path_string, identity, 'download')",
-                "data_string, path_string",
-                "w"
+                "data_string, path_string"
             ],
         "getATPBinary":
             ["Download binary data from ATP",
                 "handleAsset(data_base64encoded_string, true, path_string, identity, 'download')",
-                "data_base64encoded_string, path_string",
-                "w"
+                "data_base64encoded_string, path_string"
             ],
         "putATPText":
             ["Upload text data to ATP",
                 "handleAsset(data_string, false, path_string, identity,'upload')",
-                "data_string, path_string",
-                "w"
+                "data_string, path_string"
             ],
         "putATPBinary":
             ["Upload binary data to ATP",
                 "handleAsset(data_base64encoded_string, true, path_string, identity, 'upload')",
-                "data_base64encoded_string, path_string",
-                "w"
+                "data_base64encoded_string, path_string"
             ]
     },
     "Admin": {
         "run":
             ["Run any Overte API command (warning: risky)",
                 "adminRun(function_string,identity)",
-                "function_string",
-                "a"],
+                "function_string"
+            ],
         "shutdown":
             ["Shutdown the bridge server",
                 "webSocketServer.close(); connectedClients = []; tempModels = []; tempMeshes = []",
-                "",
-                "a"],
+                ""
+            ],
         "toggleVerbose":
             ["Toggle the verbose setting",
-                "identity.socket.send(toggleVerbosity(identity))",
-                "",
-                "a"
+                'sendToClient(toggleVerbosity(identity), "INFO", identity)',
+                ""
             ],
         "toggleListen":
             ["Toggle the listening setting",
-                "identity.socket.send(toggleListening(identity))",
-                "",
-                "a"
+                'sendToClient(toggleListening(identity), "INFO", identity)',
+                ""
             ],
         "toggleLocalOnly":
             ["Toggle the Local Only setting",
-                "identity.socket.send(toggleLocalOnly(identity))",
-                "",
-                "a"
+                'sendToClient(toggleLocalOnly(identity), "INFO", identity)',
+                ""
             ]
     }
 };
@@ -310,7 +293,7 @@ const OPERATIONS = {
 //       Format:
 //              KEY = name of the function
 //              
-const OPERATONS_HIDDEN = {
+const OPERATIONS_HIDDEN = {
     "Blender":
     {
         "json2Blender": "range,position,type",
@@ -347,9 +330,7 @@ const welcome_art = `
 @@@@                       @@@(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
 @@@@@@@                 @@@@(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((
 `;
-const welcome_msg =
-    ("Welcome to the Overte bridge server for " + DOMAIN_NAME + "\n"
-        + "Waiting for handshake...");
+const welcome_msg = ("Welcome to the Overte bridge server for " + DOMAIN_NAME + "\n" + "Waiting for handshake...");
 
 //
 // END OF CUSTOMIZEABLE SETTINGS
@@ -400,7 +381,7 @@ function sanitizeString(text) {
 function isValidIP(text) {
 
     // Localhost is always valid
-    if (text.indexOf("localhost") > -1) {
+    if (text.indexOf("localhost") > -1 || text.indexOf("127.0.0.1") > -1) {
         return true;
     }
 
@@ -462,7 +443,8 @@ function handshake(json, socket) {
 
                     // Handshake successful, so add the client to connected users list
                     connectedClients.push(identity);
-                    socket.send(STATUSES["shakeOK"]);
+                    sendToClient(STATUSES["shakeOK"], "INFO", identity);
+                    updateStatus("Identity established: " + identity.userName + " via " + identity.clientType + " [" + identity.ipAddress + "]");
                     return [true, identity];
                 }
             }
@@ -482,14 +464,14 @@ function handleAsset(data, binaryOn, path, identity, mode) {
         if (error) {
             let errmsg = 'ERROR: Data not ' + mode + 'ed or mapping not set';
             updateStatus(errmsg);
-            identity.socket.send(errmsg);
+            sendToClient(errmsg, "INFO", identity);
         } else {
             updateStatus('Successfully ' + mode + 'ed \n' +
                 'URL: ' + result.url + "\n" +
                 "Size:" + result.byteContent + "bytes\n" +
                 "Content Type: " + result.contentType) + "\n" +
                 "Client: " + identity.userName + " via " + identity.clientType;
-            identity.socket.send(((mode === 'download') ? result.response : result.url));
+            sendToClient(((mode === 'download') ? result.response : result.url), "OUTPUT", identity);
         }
     }
 
@@ -550,10 +532,10 @@ function createModel(meshname_string_array, modelname_string, identity) {
     return status;
 }
 
-function setModel(UUID_string, modelname_string, role, identity) {
+function setModel(UUID_string, modelname_string, identity) {
     // Check permissions. Only those with admin permissions should be able to change avatar models
     if (Entities.getEntityProperties(UUID_string, ["entityHostType"]) === "avatar") {
-        if (ROLES[role][1].indexOf("a") === -1) {
+        if (ROLES[identity.role][1].indexOf("a") === -1) {
             return STATUSES['wrongPerm'];
         }
     }
@@ -563,6 +545,27 @@ function setModel(UUID_string, modelname_string, role, identity) {
     let status = STATUSES["updatedModel"] + " of entity named '" + Entities.getEntityProperties(UUID_string, ["name"]) + "'";
     updateStatus(status, identity);
     return status;
+}
+
+function getTempModel(model_name, identity) {
+    if (model_name in tempModels) {
+        updateStatus("Sent 3D model data to client", identity);
+        return tempModels[model_name];
+    }
+    else {
+        updateStatus("Client requested invalid 3D model data", identity);
+        return;
+    }
+}
+function getTempMesh(mesh_name, identity) {
+    if (mesh_name in tempMeshes) {
+        updateStatus("Sent 3D mesh data to client", identity);
+        return tempMeshes[mesh_name];
+    }
+    else {
+        updateStatus("Client requested invalid 3D mesh data", identity);
+        return;
+    }
 }
 
 // TODO: Implement Blender bridge functions
@@ -602,7 +605,7 @@ function chat(msg, identity, recipient) {
     // Send chat message to all currently connected clients
     for (client of connectedClients) {
         if (!(client.clientType === "Blender")) {
-            client.socket.send(msg)
+            sendToClient(msg, "INFO", client);
         }
     }
 
@@ -626,7 +629,7 @@ function parseJSON(message, socket) {
     }
     catch (e) {
         updateStatus("Message Parsing ERROR:" + e);
-        closeSocket({ "socket": socket }, STATUSES["invalid"]);
+        closeSocket(STATUSES["invalid"], { "socket": socket });
         return "";
     }
 
@@ -637,28 +640,53 @@ function parseJSON(message, socket) {
 
 function incorrectCmd(socket) {
     let error = "ERROR: Incorrect input received.";
-    socket.send(error);
+    sendToClient(error, "INFO", identity);
     print(error);
 }
 
-function closeSocket(identity, reason = "") {
+function closeSocket(reason = "", identity) {
     let socket = identity.socket;
-    socket.send(reason);
+    sendToClient(reason, "INFO", identity);
     print(reason);
     updateStatus("Connection closed because: " + reason);
     socket.close();
     return true;
 }
 
+function sendToClient(msg, type, identity) {
+
+    identity.socket.send(JSON.stringify({ "msg": msg + "\n", "type": type }));
+
+    let id = "";
+    if ("userName" in identity && "clientType" in identity) {
+        id += "[ " + identity.userName + " via " + identity.clientType + " ]";
+    }
+
+    // If a client's command returns empty or undefined output
+    if (msg === undefined) {
+        msg = "Requested data is empty, invalid, or doesn't exist.";
+        type = "INFO";
+    }
+
+    switch (type) {
+        case "REQUEST":
+            updateStatus(STATUSES["sentRequest"] + " " + id);
+        case "INFO":
+            updateStatus(STATUSES["sentInfo"] + " " + id);
+        case "OUTPUT":
+            updateStatus(STATUSES["sentData"] + " " + id);
+    }
+}
+
 // USER PROMPT MENUS
 
 function pick_role(json, identity) {
     let socket = identity.socket;
-    let role = -1;
+    identity.role = -1;
 
-    // Check if this is a command line client
-    if (identity.clientType === "CLI") {
-        json = { "role": json };
+    // For CLI clients
+    if (!("role" in json) && identity.clientType === "CLI") {
+        json.role = json.response;
     }
 
     // Check if a valid role was selected
@@ -667,57 +695,62 @@ function pick_role(json, identity) {
         if (!isNaN(json.role)) {
             // User-provided role is verified to be a number. Now check if it's within the correct range
             if (json.role >= 0 && json.role < Object.keys(ROLES).length) {
-                role = json.role
-                socket.send("You selected the " + ROLES[role][0] + " role.");
-                updateStatus("Client selected the " + ROLES[role][0] + " role.");
+                identity.role = json.role;
+                sendToClient("You selected the " + ROLES[identity.role][0] + " role.\n", "INFO", identity);
+                updateStatus("Client selected the " + ROLES[identity.role][0] + " role.", identity);
             }
             else {
-                socket.send("ERROR: You selected a non-existent role.\n");
-                updateStatus("Client selected a non-existent role.");
+                identity.role = -1;
+                sendToClient("ERROR: You selected a non-existent role.\n", "INFO", identity);
+                updateStatus("Client selected a non-existent role.", identity);
             }
         }
     }
-    if (role === -1) {
-        identity.socket.send("Please select a role below.")
+    if (!("role" in identity) || identity.role === -1) {
+        let roles_desc = "ROLES: \n";
         for (r of ROLES) {
-            let role_description = ROLES.indexOf(r) + " - " + r[0];
-            identity.socket.send(role_description);
+            roles_desc += ROLES.indexOf(r) + "\t-\t" + r[0] + "\n";
         }
+        sendToClient(roles_desc, "INFO", identity);
+        sendToClient("Please enter the number of the role that you wish to sign in with.", "REQUEST", identity);
     }
-    return role;
+
+    return identity.role;
 }
 
-function authenticate(json, role, identity, attempts) {
+function authenticate(json, identity, attempts) {
     let socket = identity.socket;
 
-    // If client has already attempted to login more than 3 times, notify the client and close the connection
-    if (attempts > 3) { closeSocket(identity, "Too many incorrect login attempts."); return false; }
-
-    // Check if we're in CLI mode, and reformat the input to JSON format if so
-    if (identity.clientType === "CLI") {
-        json = { "password": json };
-        socket.send("This role requires a password.");
-        socket.send("Please enter the password.");
+    // For CLI clients
+    if (!("password" in json) && identity.clientType === "CLI") {
+        json.password = json.response;
+        sendToClient("This role requires a password.", "INFO", identity);
+        sendToClient("Please enter the password.", "REQUEST", identity);
     }
 
     let password = json.password;
 
     // Wrong password
-    if (!(password === ROLES[role][2])) {
+    if (!(password === ROLES[identity.role][2])) {
         attempts += 1;
         updateStatus(STATUSES["wrongPass"], identity);
-        socket.send("Incorrect password. Attempts remaining: " + (4 - attempts));
+        sendToClient("Incorrect password. Attempts remaining: " + (4 - attempts), "INFO", identity);
+
+        // If client has already attempted to login more than 3 times, notify the client and close the connection
+        if (attempts > 3) { closeSocket("Too many incorrect login attempts.", identity); return false; }
+        else { sendToClient("Please try again.", "REQUEST", identity) }
+
         return [false, attempts];
     }
     // Correct password
     else {
         updateStatus(STATUSES["rightPass"], identity);
-        socket.send("Thank you! Valid credentials received.");
+        sendToClient("Thank you! Valid credentials received.", "INFO", identity);
         return [true, 0];
     }
 }
 
-function pick_operation(json, role, identity) {
+function pick_operation(json, identity) {
     let operation = undefined;
     let command = undefined;
     let params = [];
@@ -727,28 +760,38 @@ function pick_operation(json, role, identity) {
     let valid_operations = [];
     let prompt = "Please pick a command from the list below.\n\n";
 
-    if (cli_mode) {
-        json = { "operation": json };
+    // For CLI clients
+    if (identity.clientType === "CLI" && !("operation" in json)) {
+        json.operation = json.response;
     }
 
     // Generate list of available operations
     for (category of Object.keys(OPERATIONS)) {
 
-        prompt += "* " + category.toUpperCase() + "*\n";
+        if (!CHAT_ENABLED && category === "Chat") { continue; }
+        if ((!VISIT_ENABLED) && category === "Visit" && ROLES[identity.role][1].indexOf("e") === -1) { continue; }
+        if (!EDIT_ENABLED && category === "Edit") { continue; }
 
-        for (op of Object.keys(OPERATIONS[category])) {
+        // Check if client has permissions to access this category
+        if (ROLES[identity.role][1].indexOf(category[0].toLowerCase()) > -1) {
 
-            if (!CHAT_ENABLED && OPERATIONS[category][op][3] === "c") { continue; }
-            if ((!VISIT_ENABLED) && OPERATIONS[category][op][3] === "v" && ROLES[role][1].indexOf("v") > -1) { continue; }
-            if (!EDIT_ENABLED && OPERATIONS[category][op][3] === "w") { continue; }
+            prompt += "\* " + category.toUpperCase() + " \*\n\n";
 
-            // Check if client's role has permission to perform this operation, and if so, add it to the list
-            if (ROLES[role][1].indexOf(OPERATIONS[category][op][3])) {
-                prompt += op + "\t-\t" + OPERATIONS[category][op][0] + "\t-\tParameters: " + OPERATIONS[category][op][2] + "\n";
+            let maxCommandLength = Math.max(...Object.keys(OPERATIONS[category]).map(c => c.length));
+            let maxDescLength = Math.max(...Object.keys(OPERATIONS[category]).map(c => c.length));
+
+            for (op of Object.keys(OPERATIONS[category])) {
+
+                prompt += op.padEnd(maxCommandLength) + " - " + OPERATIONS[category][op][0] + "\n";
+                if (OPERATIONS[category][op][2] !== "") {
+                    prompt += " ".padEnd(maxCommandLength) + " - Parameters: " + OPERATIONS[category][op][2];
+                }
                 valid_operations.push(op);
             }
         }
+        prompt += "\n";
     }
+
     if (hidden_ops_enabled) {
         for (op in Object.keys(OPERATIONS_HIDDEN[identity.clientType])) {
             valid_operations.push(op);
@@ -757,34 +800,66 @@ function pick_operation(json, role, identity) {
 
     // Extra information for CLI clients
     if (cli_mode) {
-        prompt += "You must provide the command and parameters as an array. Each item separated by commas.\n";
-        prompt += 'Wrap each item of the array with double quotation marks ("), NOT single marks(\').\n';
-        prompt += "Follow the example below, with the command in the first index of the array, and parameter(s) following it: \n";
-        prompt += 'EXAMPLE: ["sendChat","Hi, how are you?"]';
-    }
-
-    function getOpData() {
-        // Operation is valid, so store it
-        operation = json.operation;
-        command = json.operation[0];
-
-        // Check for params
-        if (json.operation.length > 1) {
-            params = json.operation.slice(1, json.operation.length);
-        }
+        prompt += "Examples:\n";
+        prompt += 'sendChat("Hi, how are you?")\n';
+        prompt += 'countTotalAvatars()\n';
     }
 
     // Validate operation if one was already provided
     if ("operation" in json) {
+
+        // Security checks to prevent potentially malicious code
+        const CHECKS = ["console.log(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password"];
+        for (c of CHECKS) {
+            if (json.operation.toString().toLowerCase().replace(/\\./g, '').indexOf(c.toLowerCase()) > -1) {
+                updateStatus(STATUSES["invalid"], identity);
+                closeSocket(STATUSES["invalid"], identity);
+                return undefined;
+            }
+        }
+
+        // Parse the command provided by client
+        try {
+            command = json.operation.slice(0, (json.operation.indexOf("(") > -1 ? json.operation.indexOf("(") : json.operation.length));
+        }
+        catch (err) {
+            updateStatus('Error parsing command string: ' + err, identity);
+            closeSocket(STATUSES["cmdErr"], identity);
+            return undefined;
+        }
+
+        let param_string = undefined;
+        let jsonStr = undefined;
+
+        // Check for empty params
+        if (json.operation.indexOf("(") > -1) {
+            if (json.operation.lastIndexOf(")") === (1 + json.operation.indexOf("("))) {
+                params = [];
+            }
+        }
+        else {
+            param_string = json.operation.slice(json.operation.indexOf("(") + 1, json.operation.lastIndexOf(")") - 1);
+
+            // Replace the single quotes with double quotes to make it valid JSON
+            jsonStr = `[${param_string.replace(/'/g, '"')}]`;
+
+            try {
+                params = JSON.parse(jsonStr);
+            } catch (err) {
+                updateStatus('Error parsing parameter string: ' + err, identity);
+                closeSocket(STATUSES["cmdErr"], identity);
+                return undefined;
+            }
+        }
         if (hidden_ops_enabled) {
             if (json.operation in OPERATONS_HIDDEN[clientType]) {
-                getOpData();
+                operation = json.operation;
             }
         }
         // Same as above, but for non-hidden operations
         if (operation === undefined) {
             if (valid_operations.indexOf(json.operation) > -1) {
-                getOpData();
+                operation = json.operation;
             }
         }
     }
@@ -793,16 +868,18 @@ function pick_operation(json, role, identity) {
     if (!(operation === undefined)) {
         // Construct the command
         let cmd = command + "(";
-        for (p of params) {
-            cmd += p;
-            if (params.indexOf(p) !== (params.length - 1)) {
-                cmd += ",";
+        if (params.length > 0) {
+            for (p of params) {
+                cmd += p;
+                if (params.indexOf(p) !== (params.length - 1)) {
+                    cmd += ",";
+                }
             }
         }
         cmd += ")";
 
         // Special case for admin 'run' command
-        if ((command === "run") && (ROLES[role][1].indexOf("a") > -1)) {
+        if ((command === "run") && (ROLES[identity.role][1].indexOf("a") > -1)) {
             cmd = params[0];
         }
 
@@ -811,10 +888,11 @@ function pick_operation(json, role, identity) {
         // Try running the constructed command and catch any errors
         try {
             run();
+            updateStatus(STATUSES["cmdOk"], identity);
         }
         catch (err) {
             updateStatus(STATUSES["cmdErr"] + ": " + err.message, identity);
-            socket.send(STATUSES["cmdErr"] + ": " + err.message);
+            sendToClient(STATUSES["cmdErr"] + ": " + err.message, "INFO", identity);
         }
     }
 
@@ -822,12 +900,12 @@ function pick_operation(json, role, identity) {
     else {
         // Resend the prompt to CLI client again.
         if (cli_mode) {
-            socket.send(prompt);
+            sendToClient(prompt, "REQUEST", identity);
         }
         // For non-CLI clients, send the 'invalid' error message
         else {
             updateStatus(STATUSES["invalid"], identity);
-            socket.send(STATUSES["invalid"], identity);
+            sendToClient(STATUSES["invalid"], "INFO", identity);
         }
     }
 
@@ -839,29 +917,28 @@ if (!listening) { throw { "name": "Disabled", "message": "Listening is disabled.
 updateStatus(STATUSES["starting"]);
 let webSocketServer = ((PORT > 0) ? new WebSocketServer(PORT) : new WebSocketServer());       // If PORT is 0, just randomize it.
 SERVER_URL = webSocketServer.url;
-updateStatus(STATUSES["on"] + " at URL " + SERVER_URL);
+updateStatus(STATUSES["on"] + " at URL " + SERVER_URL + " ");
 
 function onNewConnection(webSocket) {
 
     if (!listening) {
         // If "listening" is set to false, exit instead of proceeding
-        closeSocket({ "socket": webSocket }, STATUSES["off"]);
+        closeSocket(STATUSES["off"], { "socket": webSocket });
     }
     // Setup variables for this client
     let identity = undefined;
     let handshake_valid = undefined;
-    let role = -1;
     let authenticated = false;
     let auth_attempts = 0;
     let cli_mode = undefined;
     let authenticate_result = undefined;
     let operation = undefined;
 
-    updateStatus(STATUSES["connected"]);
+    updateStatus(STATUSES["connected"] + ": " + webSocket.url);
 
-    webSocket.onopen = function (message) {
-        identity.socket.send(welcome_art);
-        identity.socket.send(welcome_msg);
+    webSocket.onopen = function () {
+        sendToClient(welcome_art, "INFO", identity);
+        sendToClient(welcome_msg, "INFO", identity);
     }
     webSocket.onclose = function (message) {
         updateStatus("Connection closed.");
@@ -880,7 +957,7 @@ function onNewConnection(webSocket) {
         }
         // If handshake invalid, close the connection
         if (handshake_valid === false) {
-            closeSocket({ "socket": webSocket }, STATUSES["shakeFail"]);
+            closeSocket(STATUSES["shakeFail"], { "socket": webSocket });
             return;
         }
         // Handshake valid, so check for CLI client
@@ -890,31 +967,26 @@ function onNewConnection(webSocket) {
 
         // Check if client sent an empty or invalid message
         if (msg_json === "") {
-            // If we're not in CLI mode, then valid JSON was expected, so error and exit
-            if (!cli_mode) {
-                incorrectCmd();
-                closeSocket(identity, STATUSES["invalid"]);
-                return;
-            }
-            // If CLI mode is enabled, then assume the message was just a string
-            else {
-                msg_json = message;
-                return;
-            }
+            // JSON was empty, so error and exit
+            incorrectCmd();
+            closeSocket(STATUSES["invalid"], identity);
+            return;
         }
 
         // If role hasn't been set, prompt the client to select a role first
-        if (role === -1 && handshake_valid === true) {
-            role = pick_role(msg_json, identity);
+        if (handshake_valid === true) {
+            if (!("role" in identity) || identity.role === -1) {
+                identity.role = pick_role(msg_json, identity);
+            }
         }
 
         // Authenticate if needed
-        if (authenticated === false && role > -1 && handshake_valid === true) {
+        if (authenticated === false && identity.role > -1 && handshake_valid === true) {
 
             // Check permission requirements for the selected role
-            if (ROLES[role][1].indexOf("a") > -1 || ROLES[role[1]].indexOf("w") > -1) {
+            if ((ROLES[identity.role][1].indexOf("a") > -1) || (ROLES[identity.role][1].indexOf("e") > -1)) {
                 // Check for correct password
-                authenticate_result = authenticate(msg_json, role, identity, auth_attempts);
+                authenticate_result = authenticate(msg_json, identity, auth_attempts);
             }
             else {
                 // Selected role doesn't require write or admin privileges, so authenticate automatically without a password
@@ -927,9 +999,9 @@ function onNewConnection(webSocket) {
         }
 
         // Provide a list to the user of possible actions
-        if (operation === undefined && authenticated === true && role > -1 && handshake_valid === true) {
+        if (operation === undefined && authenticated === true && identity.role > -1 && handshake_valid === true) {
             // Check if this is a special client type, such as Blender or AI
-            operation = pick_operation(msg_json, role, identity);
+            operation = pick_operation(msg_json, identity);
         }
     }
 
