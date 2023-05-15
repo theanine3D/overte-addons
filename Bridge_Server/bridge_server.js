@@ -30,6 +30,7 @@ const DOMAIN_NAME = "Overte World";                 // A name for your server - 
 const EDIT_ENABLED = true;                          // If enabled, editing operations will be available to authenticated clients with user or admin permissions
 const CHAT_ENABLED = true;                          // If enabled, chat operations will be available to clients with the chat permission (by default, all of them)
 const VISIT_ENABLED = true;                         // If enabled, visitors from other platforms or third-party clients will be able to connect and have an in-world presence.
+const CHAT_LIMIT = 500;                             // If set to 0, clients will be able to send chat messages of any length (not recommended)
 
 //
 // CLIENT TYPES
@@ -102,6 +103,7 @@ const STATUSES = {
     "updatedModel": "Updated 3D model",
     "gotChat": "Chat message received from client",
     "sentChat": "Chat message sent to clients",
+    "chatToolong": "Blocked chat msg beyond limit",
     "invalid": "Invalid request",
     "shakeFail": "Handshake failed",
     "shakeOK": "Handshake OK",
@@ -128,7 +130,7 @@ const OPERATIONS = {
     {
         "commands":
             ["Show a list of the available commands",
-                'pick_operation(json,identity)',
+                'identity.operation = "";',
                 ""
             ],
         "countTotalAvatars":
@@ -151,7 +153,7 @@ const OPERATIONS = {
     {
         "sendChat":
             ["Send chat message to bridge",
-                "chat(msg_string,identity,'server')",
+                "chat('msg_string','server',identity)",
                 "msg_string"
             ]
     },
@@ -604,14 +606,24 @@ function updateStatus(status, identity = undefined) {
     }
 }
 
-function chat(msg, identity, recipient) {
+function chat(msg, recipient, identity) {
+
+    if (CHAT_LIMIT > 0) {
+        if (msg.length > CHAT_LIMIT) {
+            sendToClient("ERROR: Chat message is too long (above " + CHAT_LIMIT + " characters)", "INFO", identity);
+            updateStatus(STATUSES["chatTooLong"], identity);
+            return;
+        }
+    }
 
     // Reformat the client's chat message
-    msg = "[CHAT] [" + identity.userName + " (via " + identity.clientType + "] " + msg;
+    msg = "[CHAT] [" + identity.userName + " via " + identity.clientType + "] " + msg;
 
     // Send chat message to all currently connected clients
     for (client of connectedClients) {
-        if (!(client.clientType === "Blender")) {
+        if (client.clientType !== "Blender") {
+            print("CHAT MESSAGE: " + msg);
+            print("CHAT RECEIVING CLIENT: " + JSON.stringify(client));
             sendToClient(msg, "INFO", client);
         }
     }
@@ -651,12 +663,25 @@ function incorrectCmd(socket) {
     print(error);
 }
 
-function closeSocket(reason = "", identity) {
+function closeSocket(reason = "", identity, code = 1002) {
     let socket = identity.socket;
-    sendToClient(reason, "INFO", identity);
+
+    switch (reason) {
+        case STATUSES["invalid"]:
+            code = 1002;
+        case STATUSES["shakeFail"]:
+            code = 1015;
+        case STATUSES["wrongPerm"]:
+            code = 1008;
+        case STATUSES["cmdErr"]:
+            code = 1003;
+        case "":
+            code = 1011;
+    }
+
     print(reason);
     updateStatus("Connection closed because: " + reason);
-    socket.close();
+    socket.close(code, reason);
     return true;
 }
 
@@ -713,7 +738,7 @@ function pick_role(json, identity) {
             }
         }
     }
-    if (!("role" in identity) || identity.role === -1) {
+    if (!("role" in identity) || parseInt(identity.role) === -1) {
         let roles_desc = "ROLES: \n";
         for (r of ROLES) {
             roles_desc += ROLES.indexOf(r) + "\t-\t" + r[0] + "\n";
@@ -738,7 +763,7 @@ function authenticate(json, identity, attempts) {
     let password = json.password;
 
     // Wrong password
-    if (!(password === ROLES[identity.role][2])) {
+    if (!(password === ROLES[parseInt(identity.role)][2])) {
         attempts += 1;
         updateStatus(STATUSES["wrongPass"], identity);
         sendToClient("Incorrect password. Attempts remaining: " + (4 - attempts), "INFO", identity);
@@ -778,7 +803,7 @@ function pick_operation(json, identity) {
     for (category of Object.keys(OPERATIONS)) {
 
         if (!CHAT_ENABLED && category === "Chat") { continue; }
-        if ((!VISIT_ENABLED) && category === "Visit" && ROLES[identity.role][1].indexOf("e") === -1) { continue; }
+        if ((!VISIT_ENABLED) && category === "Visit" && ROLES[parseInt(identity.role)][1].indexOf("e") === -1) { continue; }
         if (!EDIT_ENABLED && category === "Edit") { continue; }
 
         // Check if client has permissions to access this category
@@ -849,12 +874,10 @@ function pick_operation(json, identity) {
         updateStatus("PARAMS STRING: " + param_string, identity);
 
         // Check if requested command is valid
-        if (valid_operations.includes(command)) {
-            if (identity.request_count > 0) {
-                updateStatus(STATUSES["invalid"], identity);
-                closeSocket(STATUSES["invalid"], identity);
-                return false;
-            }
+        if (valid_operations.indexOf(command) === -1) {
+            updateStatus(STATUSES["invalid"], identity);
+            closeSocket(STATUSES["invalid"], identity);
+            return false;
         }
 
         let jsonStr = "";
@@ -912,7 +935,7 @@ function pick_operation(json, identity) {
         }
 
         // Inject the parameters into command string
-        for (param_count = 0; param_count < required_params.length; param_counter++) {
+        for (param_count = 0; param_count < required_params.length; param_count++) {
             cmd = cmd.replace(required_params[param_count], params[param_count]);
         }
 
@@ -924,17 +947,12 @@ function pick_operation(json, identity) {
         print("CONSTRUCTED CMD: " + cmd);
         const run = new Function("identity", cmd);
 
-        // for (client = 0; client < connectedClients.length; client++ -) {
-        //     if (client === identity) {
-        //         identity = connectedClients[client];
-        //         break;
-        //     }
-        // }
-
         // Try running the constructed command and catch any errors
         try {
             run(identity);
             updateStatus(STATUSES["cmdOk"], identity);
+            json.operation = "";
+            identity.operation = "";
         }
         catch (err) {
             updateStatus(STATUSES["cmdErr"] + ": " + err.message, identity);
@@ -946,7 +964,9 @@ function pick_operation(json, identity) {
     // Resend the prompt to CLI client again.
     if (cli_mode) {
         if (identity.request_count > 0) {
-            prompt = "Please enter another command";
+            if (command !== "commands") {
+                prompt = "Please enter another command";
+            }
         }
         sendToClient(prompt, "REQUEST", identity);
     }
@@ -1017,7 +1037,7 @@ function onNewConnection(webSocket) {
 
         // If role hasn't been set, prompt the client to select a role first
         if (handshake_valid === true) {
-            if (!("role" in identity) || identity.role === -1) {
+            if (!("role" in identity) || parseInt(identity.role) === -1) {
                 identity.role = pick_role(msg_json, identity);
             }
         }
