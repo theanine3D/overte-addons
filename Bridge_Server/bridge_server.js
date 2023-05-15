@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1.3
+// Overte Bridge Server - v0.1.4
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -106,7 +106,8 @@ const STATUSES = {
     "shakeFail": "Handshake failed",
     "shakeOK": "Handshake OK",
     "wrongPerm": "Insufficient permissions",
-    "cmdErr": "Command error"
+    "cmdErr": "Command error",
+    "cmdOk": "Command run successfully"
 }
 
 //
@@ -125,10 +126,15 @@ const STATUSES = {
 const OPERATIONS = {
     "Query":
     {
+        "commands":
+            ["Show a list of the available commands",
+                'pick_operation(json,identity)',
+                ""
+            ],
         "countTotalAvatars":
             ["Get total avatar count",
                 'sendToClient(AvatarList.getAvatarIdentifiers().length,"OUTPUT",identity)',
-                "",
+                ""
             ],
         "countTotalClients":
             ["Get bridge client count",
@@ -145,7 +151,7 @@ const OPERATIONS = {
     {
         "sendChat":
             ["Send chat message to bridge",
-                "chat(msg_string, identity, 'server')",
+                "chat(msg_string,identity,'server')",
                 "msg_string"
             ]
     },
@@ -154,12 +160,12 @@ const OPERATIONS = {
         "getEntIDsByType":
             ["Get all IDs of entities of specific TYPE, within distance of a position",
                 'sendToClient(Entities.findEntitiesByType(type_string,position_vec3,distance_int),"OUTPUT",identity)',
-                "type_string, position_vec3,distance_int"
+                "type_string,position_vec3,distance_int"
             ],
         "getEntIDsByName":
             ["Get all IDs of entities with specific NAME, within distance of a position",
                 'sendToClient(Entities.findEntitiesByName("Model",position_vec3,distance_int),"OUTPUT",identity)',
-                "type_string, position_vec3,distance_int"
+                "type_string,position_vec3,distance_int"
             ],
         "getEntDataByID":
             ["Get specific entity's data via UUID",
@@ -173,17 +179,17 @@ const OPERATIONS = {
             ],
         "getAvatarDataByID":
             ["Get specific avatar's info",
-                'sendToClient(AvatarList.getAvatar(UUID_string), "OUTPUT", identity)',
+                'sendToClient(AvatarList.getAvatar(UUID_string),"OUTPUT",identity)',
                 "UUID_string"
             ],
         "getAvatarsNearPosition":
             ["Get avatars within specific distance of a position",
-                'sendToClient(Avatar.getAvatarsInRange({x:x_int, y:y_int, z:z_int}, distance_int),"OUTPUT",identity)',
+                'sendToClient(Avatar.getAvatarsInRange({x:x_int,y:y_int,z:z_int},distance_int),"OUTPUT",identity)',
                 "x_int,y_int,z_int,distance_int"
             ],
         "isAvatarNearPosition":
             ["Check if specific avatar within specific distance",
-                'sendToClient(Avatar.isAvatarInRange({x:x_int, y:y_int, z:z_int}, distance_int),"OUTPUT",identity)',
+                'sendToClient(Avatar.isAvatarInRange({x:x_int,y:y_int, z:z_int},distance_int),"OUTPUT",identity)',
                 "x_int,y_int,z_int,distance_int"
             ],
         "getModelByUUID":
@@ -241,23 +247,23 @@ const OPERATIONS = {
             ],
         "getATPText":
             ["Download text data from ATP",
-                "handleAsset(data_string, false, path_string, identity, 'download')",
+                "handleAsset(data_string,false,path_string,identity,'download')",
                 "data_string, path_string"
             ],
         "getATPBinary":
             ["Download binary data from ATP",
-                "handleAsset(data_base64encoded_string, true, path_string, identity, 'download')",
-                "data_base64encoded_string, path_string"
+                "handleAsset(data_base64encoded_string,true,path_string,identity,'download')",
+                "data_base64encoded_string,path_string"
             ],
         "putATPText":
             ["Upload text data to ATP",
-                "handleAsset(data_string, false, path_string, identity,'upload')",
-                "data_string, path_string"
+                "handleAsset(data_string,false,path_string,identity,'upload')",
+                "data_string,path_string"
             ],
         "putATPBinary":
             ["Upload binary data to ATP",
-                "handleAsset(data_base64encoded_string, true, path_string, identity, 'upload')",
-                "data_base64encoded_string, path_string"
+                "handleAsset(data_base64encoded_string,true,path_string,identity,'upload')",
+                "data_base64encoded_string,path_string"
             ]
     },
     "Admin": {
@@ -273,17 +279,17 @@ const OPERATIONS = {
             ],
         "toggleVerbose":
             ["Toggle the verbose setting",
-                'sendToClient(toggleVerbosity(identity), "INFO", identity)',
+                'sendToClient(toggleVerbosity(identity),"INFO",identity)',
                 ""
             ],
         "toggleListen":
             ["Toggle the listening setting",
-                'sendToClient(toggleListening(identity), "INFO", identity)',
+                'sendToClient(toggleListening(identity),"INFO",identity)',
                 ""
             ],
         "toggleLocalOnly":
             ["Toggle the Local Only setting",
-                'sendToClient(toggleLocalOnly(identity), "INFO", identity)',
+                'sendToClient(toggleLocalOnly(identity),"INFO",identity)',
                 ""
             ]
     }
@@ -336,10 +342,10 @@ const welcome_msg = ("Welcome to the Overte bridge server for " + DOMAIN_NAME + 
 // END OF CUSTOMIZEABLE SETTINGS
 //
 
-let connectedClients = [];
-let tempMeshes = {};
-let tempModels = {};
-let SERVER_URL = "";
+var connectedClients = [];
+var tempMeshes = {};
+var tempModels = {};
+var SERVER_URL = "";
 
 const crypt = (salt, text) => {
     if (ENCRYPTED) {
@@ -443,6 +449,7 @@ function handshake(json, socket) {
 
                     // Handshake successful, so add the client to connected users list
                     connectedClients.push(identity);
+                    identity = connectedClients[connectedClients.length - 1];
                     sendToClient(STATUSES["shakeOK"], "INFO", identity);
                     updateStatus("Identity established: " + identity.userName + " via " + identity.clientType + " [" + identity.ipAddress + "]");
                     return [true, identity];
@@ -655,7 +662,7 @@ function closeSocket(reason = "", identity) {
 
 function sendToClient(msg, type, identity) {
 
-    identity.socket.send(JSON.stringify({ "msg": msg + "\n", "type": type }));
+    identity.socket.send(JSON.stringify({ "msg": msg, "type": type }));
 
     let id = "";
     if ("userName" in identity && "clientType" in identity) {
@@ -751,8 +758,10 @@ function authenticate(json, identity, attempts) {
 }
 
 function pick_operation(json, identity) {
-    let operation = undefined;
-    let command = undefined;
+    let operation = "";
+    let command = "";
+    let cmd_category = "";
+    let param_string = "";
     let params = [];
     let socket = identity.socket;
     let cli_mode = identity.clientType === "CLI";
@@ -761,7 +770,7 @@ function pick_operation(json, identity) {
     let prompt = "Please pick a command from the list below.\n\n";
 
     // For CLI clients
-    if (identity.clientType === "CLI" && !("operation" in json)) {
+    if (identity.clientType === "CLI" && (json.operation === "" || json.operation === undefined)) {
         json.operation = json.response;
     }
 
@@ -798,15 +807,16 @@ function pick_operation(json, identity) {
         }
     }
 
-    // Extra information for CLI clients
     if (cli_mode) {
         prompt += "Examples:\n";
         prompt += 'sendChat("Hi, how are you?")\n';
         prompt += 'countTotalAvatars()\n';
     }
 
+    print("OPERATION: " + json.operation);
+
     // Validate operation if one was already provided
-    if ("operation" in json) {
+    if (isNaN(parseInt(json.operation)) && json.operation !== "") {
 
         // Security checks to prevent potentially malicious code
         const CHECKS = ["console.log(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password"];
@@ -818,98 +828,130 @@ function pick_operation(json, identity) {
             }
         }
 
-        // Parse the command provided by client
+        // Parse the operation provided by client
         try {
             command = json.operation.slice(0, (json.operation.indexOf("(") > -1 ? json.operation.indexOf("(") : json.operation.length));
+            if (json.operation.indexOf("(") > -1) {
+                param_string = json.operation.slice(json.operation.indexOf("(") + 1, json.operation.lastIndexOf(")"));
+            }
+            else {
+                param_string = "";
+            }
         }
         catch (err) {
             updateStatus('Error parsing command string: ' + err, identity);
             closeSocket(STATUSES["cmdErr"], identity);
-            return undefined;
+            return false;
         }
 
-        let param_string = undefined;
-        let jsonStr = undefined;
+        // DEBUG
+        updateStatus("COMMAND STRING: " + command, identity);
+        updateStatus("PARAMS STRING: " + param_string, identity);
 
-        // Check for empty params
-        if (json.operation.indexOf("(") > -1) {
-            if (json.operation.lastIndexOf(")") === (1 + json.operation.indexOf("("))) {
-                params = [];
+        // Check if requested command is valid
+        if (valid_operations.includes(command)) {
+            if (identity.request_count > 0) {
+                updateStatus(STATUSES["invalid"], identity);
+                closeSocket(STATUSES["invalid"], identity);
+                return false;
             }
         }
-        else {
-            param_string = json.operation.slice(json.operation.indexOf("(") + 1, json.operation.lastIndexOf(")") - 1);
 
-            // Replace the single quotes with double quotes to make it valid JSON
-            jsonStr = `[${param_string.replace(/'/g, '"')}]`;
+        let jsonStr = "";
 
-            try {
-                params = JSON.parse(jsonStr);
-            } catch (err) {
-                updateStatus('Error parsing parameter string: ' + err, identity);
-                closeSocket(STATUSES["cmdErr"], identity);
-                return undefined;
-            }
+        // Replace the single quotes with double quotes to make it valid JSON
+        jsonStr = "[" + param_string.replace(/'/g, '"') + "]";
+
+        try {
+            params = JSON.parse(jsonStr);
         }
-        if (hidden_ops_enabled) {
-            if (json.operation in OPERATONS_HIDDEN[clientType]) {
-                operation = json.operation;
-            }
+        catch (err) {
+            updateStatus('Error parsing parameter string: ' + err, identity);
+            closeSocket(STATUSES["cmdErr"], identity);
+            return false;
         }
-        // Same as above, but for non-hidden operations
-        if (operation === undefined) {
-            if (valid_operations.indexOf(json.operation) > -1) {
-                operation = json.operation;
-            }
-        }
+
     }
 
-    // Prepare to run the operation
-    if (!(operation === undefined)) {
-        // Construct the command
-        let cmd = command + "(";
-        if (params.length > 0) {
-            for (p of params) {
-                cmd += p;
-                if (params.indexOf(p) !== (params.length - 1)) {
-                    cmd += ",";
+    // Prepare to construct the command and run the operation
+    if (!(command === "")) {
+        let cmd = "";
+
+        for (category of Object.keys(OPERATIONS)) {
+            for (op of Object.keys(OPERATIONS[category])) {
+                if (op === command) {
+                    cmd = OPERATIONS[category][op][1];
+                    cmd_category = category;
+                    break;
                 }
             }
+            if (cmd !== "") {
+                break;
+            }
         }
-        cmd += ")";
+
+        print("REQUESTED CATEGORY: " + cmd_category);
+        print("REQUESTED CMD: " + OPERATIONS[cmd_category][command]);
+        print("REQUIRED PARAMS: " + OPERATIONS[cmd_category][command][2]);
+        print("SUBMITTED PARAMS: " + params);
+        print("SUBMITTED PARAMS TYPE: " + typeof (params));
+
+        let required_params = OPERATIONS[cmd_category][command][2].split(",");
+
+        print("REQUIRED PARAMS LENGTH: " + required_params.length);
+        print("SUBMITTED PARAMS LENGTH: " + params.length);
+
+        if (required_params[0] === "") {
+            required_params = [];
+        }
+        if (required_params.length !== params.length) {
+            let status = "ERROR: Parameter mismatch";
+            updateStatus(status, identity);
+            closeSocket(status, identity);
+            return false;
+        }
+
+        // Inject the parameters into command string
+        for (param_count = 0; param_count < required_params.length; param_counter++) {
+            cmd = cmd.replace(required_params[param_count], params[param_count]);
+        }
 
         // Special case for admin 'run' command
         if ((command === "run") && (ROLES[identity.role][1].indexOf("a") > -1)) {
             cmd = params[0];
         }
 
-        const run = new Function(cmd);
+        print("CONSTRUCTED CMD: " + cmd);
+        const run = new Function("identity", cmd);
+
+        // for (client = 0; client < connectedClients.length; client++ -) {
+        //     if (client === identity) {
+        //         identity = connectedClients[client];
+        //         break;
+        //     }
+        // }
 
         // Try running the constructed command and catch any errors
         try {
-            run();
+            run(identity);
             updateStatus(STATUSES["cmdOk"], identity);
         }
         catch (err) {
             updateStatus(STATUSES["cmdErr"] + ": " + err.message, identity);
-            sendToClient(STATUSES["cmdErr"] + ": " + err.message, "INFO", identity);
+            closeSocket(STATUSES["cmdErr"] + ": " + err.message, identity);
         }
+        identity.request_count += 1;
     }
 
-    // Valid operation request wasn't received.
-    else {
-        // Resend the prompt to CLI client again.
-        if (cli_mode) {
-            sendToClient(prompt, "REQUEST", identity);
+    // Resend the prompt to CLI client again.
+    if (cli_mode) {
+        if (identity.request_count > 0) {
+            prompt = "Please enter another command";
         }
-        // For non-CLI clients, send the 'invalid' error message
-        else {
-            updateStatus(STATUSES["invalid"], identity);
-            sendToClient(STATUSES["invalid"], "INFO", identity);
-        }
+        sendToClient(prompt, "REQUEST", identity);
     }
 
-    return undefined;
+    return false;
 }
 
 if (!listening) { throw { "name": "Disabled", "message": "Listening is disabled. Exiting..." }; }     // If "listening" is set to false, exit instead of proceeding
@@ -926,13 +968,12 @@ function onNewConnection(webSocket) {
         closeSocket(STATUSES["off"], { "socket": webSocket });
     }
     // Setup variables for this client
-    let identity = undefined;
+    var identity = undefined;
     let handshake_valid = undefined;
     let authenticated = false;
     let auth_attempts = 0;
     let cli_mode = undefined;
     let authenticate_result = undefined;
-    let operation = undefined;
 
     updateStatus(STATUSES["connected"] + ": " + webSocket.url);
 
@@ -963,6 +1004,7 @@ function onNewConnection(webSocket) {
         // Handshake valid, so check for CLI client
         else {
             cli_mode = (identity.clientType === "CLI" ? true : false);
+            identity.request_count = 0;
         }
 
         // Check if client sent an empty or invalid message
@@ -999,9 +1041,9 @@ function onNewConnection(webSocket) {
         }
 
         // Provide a list to the user of possible actions
-        if (operation === undefined && authenticated === true && identity.role > -1 && handshake_valid === true) {
+        if (authenticated === true && identity.role > -1 && handshake_valid === true) {
             // Check if this is a special client type, such as Blender or AI
-            operation = pick_operation(msg_json, identity);
+            pick_operation(msg_json, identity);
         }
     }
 
