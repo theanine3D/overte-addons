@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1.6
+// Overte Bridge Server - v0.1.7
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -10,10 +10,10 @@
 // CUSTOMIZEABLE SETTINGS BELOW
 
 // SECURITY SETTINGS
-const ENCRYPTED = false;                            // If true, all *networked* messages sent by server will be encrypted, & server will only accept msgs encrypted with key below
+const ENCRYPTED = false;                            // If true, client passwords must be encrypted with the key in the line below, 
 const KEY = "3EA66EC1AF586A3FEDE84D7324221";        // Used only if 'encrypted' variable above is set to "true" - for maximum security, use at least a 256-bit key.
-const ADMIN_PASSWORD = "S0r4jq6owj";
-const USER_PASSWORD = "3dpUcn6C1H";
+const ADMIN_PASSWORD = "4jq6S0rowj";
+const USER_PASSWORD = "n6C3dpUc1H";
 
 // GENERAL SETTINGS
 let listening = true;                               // If set to false, the bridge server will go offline.
@@ -83,11 +83,11 @@ const ROLES = [
 
 const STATUSES = {
     "starting": "Launching bridge server",
-    "off": "Bridge closed and offline",
-    "on": "Bridge open and listening",
+    "off": "Bridge offline and closed",
+    "on": "Bridge online and listening",
     "closing": "Shutting down bridge",
     "connected": "Connected to new client",
-    "disconnected": "Disconnected from client",
+    "disconnected": "Client disconnected",
     "sentRequest": "Sent request to client",
     "gotRequest": "Got request from client",
     "sentInfo": "Sent info to client",
@@ -109,7 +109,8 @@ const STATUSES = {
     "shakeOK": "Handshake OK",
     "wrongPerm": "Insufficient permissions",
     "cmdErr": "Command error",
-    "cmdOk": "Command run successfully"
+    "cmdOk": "Command run successfully",
+    "complete": "Completed one-time client operation"
 }
 
 //
@@ -135,7 +136,9 @@ const OPERATIONS = {
             ],
         "getServerTime":
             ["Get current server time & date",
-                'sendToClient(new Date().toLocaleString(),"OUTPUT", identity) ',
+                'let servertime = new Date(); ' +
+                'if (identity.clientType === "CLI") { servertime = servertime.toLocaleString(); }' +
+                'sendToClient(servertime,"OUTPUT", identity) ',
                 ""
             ],
         "countTotalAvatars":
@@ -148,9 +151,9 @@ const OPERATIONS = {
                 'sendToClient(connectedClients.length,"OUTPUT",identity)',
                 ""
             ],
-        "disconnect":
+        "quit":
             ["Disconnect from the bridge server",
-                'closeSocket("Client disconnected.",identity)',
+                'closeSocket(STATUSES["disconnected"],identity)',
                 ""
             ]
     },
@@ -280,7 +283,7 @@ const OPERATIONS = {
             ],
         "shutdown":
             ["Shutdown the bridge server",
-                "webSocketServer.close(); connectedClients = []; tempModels = []; tempMeshes = []",
+                "webSocketServer.close(); connectedClients = []; tempModels = []; tempMeshes = []; updateStatus(STATUSES['off'],identity)",
                 ""
             ],
         "toggleVerbose":
@@ -304,20 +307,21 @@ const OPERATIONS = {
 // These operations are never shown to CLI clients. They're intended for editing tools like Blender, as well as AI-powered scripts
 //       Format:
 //              KEY = name of the function
+//              VALUE = parameters
 //              
 const OPERATIONS_HIDDEN = {
     "Blender":
     {
-        "json2Blender": "range,position,type",
-        "json2Bridge": "range,position,type",
-        "syncUUID": "entities_array"
+        "json2Blender": "range_int,x_int,y_int,z_int,type_string",
+        "json2Bridge": "range_int,x_int,y_int,z_int,type_string",
+        "syncUUID": "entitiesUUID_array"
 
     },
     "AI":
     {
-        "botSpeak": "uuid,msg",
-        "botListen": "uuid.msg",
-        "botRespond": "uuid,msg"
+        "botSpeak": "UUID_string,msg_string",
+        "botListen": "UUID_string,msg_string",
+        "botRespond": "UUID_string,msg_string"
     }
 }
 
@@ -351,27 +355,26 @@ const welcome_msg = ("Welcome to the Overte bridge server for " + DOMAIN_NAME + 
 var connectedClients = [];
 var tempMeshes = {};
 var tempModels = {};
-var SERVER_URL = "";
+var serverURL = "";
 
-const crypt = (salt, text) => {
-    if (ENCRYPTED) {
-        const textToChars = (text) => text.split("").map((c) => c.charCodeAt(0));
-        const byteHex = (n) => ("0" + Number(n).toString(16)).substr(-2);
-        const applySaltToChar = (code) => textToChars(salt).reduce((a, b) => a ^ b, code);
+// Find and retrieve the bridge's in-world 3D models
+const UUID = Entities.findEntitiesByName("bridgeStatus", { x: 0, y: 0, z: 0 }, 10000)[0];
+const MODELS = Entities.getChildrenIDs(UUID);
 
-        return text
-            .split("")
-            .map(textToChars)
-            .map(applySaltToChar)
-            .map(byteHex)
-            .join("");
-    }
-    else {
-        return text;
-    }
-};
+function encrypt(salt, text) {
+    const textToChars = (text) => text.split("").map((c) => c.charCodeAt(0));
+    const byteHex = (n) => ("0" + Number(n).toString(16)).substr(-2);
+    const applySaltToChar = (code) => textToChars(salt).reduce((a, b) => a ^ b, code);
 
-const decrypt = (salt, encoded) => {
+    return text
+        .split("")
+        .map(textToChars)
+        .map(applySaltToChar)
+        .map(byteHex)
+        .join("");
+}
+
+function decrypt(salt, encoded) {
     if (ENCRYPTED) {
         const textToChars = (text) => text.split("").map((c) => c.charCodeAt(0));
         const applySaltToChar = (code) => textToChars(salt).reduce((a, b) => a ^ b, code);
@@ -385,7 +388,7 @@ const decrypt = (salt, encoded) => {
     else {
         return encoded;
     }
-};
+}
 
 function sanitizeString(text) {
     return text.replace(/[^a-zA-Z0-9 ]/g, '');
@@ -402,7 +405,7 @@ function isValidIP(text) {
 
     // If Local Only is enabled, check if it's the same IP as the server itself
     if (local_only) {
-        if ((SERVER_URL.indexOf(result) === -1)) {
+        if ((serverURL.indexOf(result) === -1)) {
             return false;
         }
     }
@@ -423,7 +426,7 @@ function toggleListening(identity) {
     return status;
 }
 
-function toggleLocalonly(identity) {
+function toggleLocalOnly(identity) {
     local_only = !(local_only);
     let status = "Bridge is now open " + ((local_only === true) ? "only to the localhost" : "to everyone");
     updateStatus(status, identity);
@@ -459,6 +462,12 @@ function handshake(json, socket) {
                     identity = connectedClients[connectedClients.length - 1];
                     sendToClient(STATUSES["shakeOK"], "INFO", identity);
                     updateStatus("Identity established: " + identity.userName + " via " + identity.clientType + " [" + identity.ipAddress + "]");
+
+                    // Check if this is a complete command
+                    if ("complete" in json) {
+                        identity.complete = json.complete;
+                    }
+
                     return [true, identity];
                 }
             }
@@ -621,6 +630,9 @@ function updateStatus(status, identity = undefined) {
         // Send status via status channel
         Messages.sendMessage(STATUS_CHANNEL, "[ " + timestamp.toLocaleString() + " ] " + status);
         print(status);
+        Entities.editEntity(UUID, {
+            "text": "Bridge: " + status
+        });
     }
 }
 
@@ -640,8 +652,6 @@ function chat(msg, recipient, identity) {
     // Send chat message to all currently connected clients
     for (client of connectedClients) {
         if (client.clientType !== "Blender") {
-            print("CHAT MESSAGE: " + msg);
-            print("CHAT RECEIVING CLIENT: " + JSON.stringify(client));
             sendToClient(msg, "INFO", client);
         }
     }
@@ -655,10 +665,6 @@ function chat(msg, recipient, identity) {
 
 function parseJSON(message, socket) {
     json = "";
-
-    if (ENCRYPTED === true) {
-        json = decrypt(KEY, message.data);
-    }
 
     // Try parsing JSON - and if it fails, print the error and quit
     try {
@@ -693,6 +699,8 @@ function closeSocket(reason = "", identity, code = 1002) {
             code = 1008;
         case STATUSES["cmdErr"]:
             code = 1003;
+        case STATUSES["disconnected"]:
+            code = 1000;
         case "":
             code = 1011;
     }
@@ -705,8 +713,6 @@ function closeSocket(reason = "", identity, code = 1002) {
 }
 
 function sendToClient(msg, type, identity) {
-
-    identity.socket.send(JSON.stringify({ "msg": msg, "type": type }));
 
     let id = "";
     if ("userName" in identity && "clientType" in identity) {
@@ -727,6 +733,15 @@ function sendToClient(msg, type, identity) {
         case "OUTPUT":
             updateStatus(STATUSES["sentData"] + " " + id);
     }
+
+    // If client is not CLI
+    if ("complete" in identity) {
+        if (identity.complete && type !== "OUTPUT") {
+            return;
+        }
+    }
+    identity.socket.send(JSON.stringify({ "msg": msg, "type": type }));
+
 }
 
 // USER PROMPT MENUS
@@ -770,44 +785,58 @@ function pick_role(json, identity) {
 }
 
 function authenticate(json, identity, attempts) {
-    let socket = identity.socket;
+    let password = "";
+    let authenticated = false;
 
     // For CLI clients
     if (!("password" in json) && identity.clientType === "CLI") {
-        json.password = json.response;
-        sendToClient("This role requires a password.", "INFO", identity);
-        sendToClient("Please enter the password.", "REQUEST", identity);
+        password = json.response;
     }
-
-    let password = json.password;
-
-    // Wrong password
-    if (!(password === ROLES[parseInt(identity.role)][2])) {
-        attempts += 1;
-        updateStatus(STATUSES["wrongPass"], identity);
-        sendToClient("Incorrect password. Attempts remaining: " + (4 - attempts), "INFO", identity);
-
-        // If client has already attempted to login more than 3 times, notify the client and close the connection
-        if (attempts > 3) { closeSocket("Too many incorrect login attempts.", identity); return false; }
-        else { sendToClient("Please try again.", "REQUEST", identity) }
-
-        return [false, attempts];
-    }
-    // Correct password
     else {
+        password = json.password;
+    }
+
+    // Check if encryption is enabled
+    if (ENCRYPTED === true) {
+        password = decrypt(KEY, password);
+    }
+
+    // Correct password
+    if (password === ROLES[parseInt(identity.role)][2]) {
         updateStatus(STATUSES["rightPass"], identity);
         sendToClient("Thank you! Valid credentials received.", "INFO", identity);
-        return [true, 0];
+        authenticated = true;
     }
+
+    // Wrong password
+    else {
+        if (attempts === 0) {
+            sendToClient("This role requires a password.\n Please enter the password.", "REQUEST", identity);
+        }
+        else {
+            updateStatus(STATUSES["wrongPass"], identity);
+            sendToClient("Incorrect password. Attempts remaining: " + (5 - attempts), "INFO", identity);
+
+            // If client has already attempted to login more than 4 times, notify the client and close the connection
+            if (attempts > 4) {
+                closeSocket("Too many incorrect login attempts.", identity);
+                return [false, 0];
+            }
+
+            else {
+                sendToClient("Please try again.", "REQUEST", identity)
+            }
+        }
+    }
+    attempts += 1;
+    return [authenticated, attempts];
 }
 
 function pick_operation(json, identity) {
-    let operation = "";
     let command = "";
     let cmd_category = "";
     let param_string = "";
     let params = [];
-    let socket = identity.socket;
     let cli_mode = identity.clientType === "CLI";
     let hidden_ops_enabled = (identity.clientType in OPERATIONS_HIDDEN);
     let valid_operations = [];
@@ -815,6 +844,11 @@ function pick_operation(json, identity) {
 
     // For CLI clients
     if (identity.clientType === "CLI" && (json.operation === "" || json.operation === undefined)) {
+
+        if (json.response === ROLES[parseInt(identity.role)][2]) {
+            json.response = "";
+        }
+
         json.operation = json.response;
     }
 
@@ -857,13 +891,11 @@ function pick_operation(json, identity) {
         prompt += 'countTotalAvatars()\n';
     }
 
-    print("OPERATION: " + json.operation);
-
     // Validate operation if one was already provided
     if (isNaN(parseInt(json.operation)) && json.operation !== "") {
 
         // Security checks to prevent potentially malicious code
-        const CHECKS = ["console.log(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password"];
+        const CHECKS = ["console.log(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password", "JSON.parse"];
         for (c of CHECKS) {
             if (json.operation.toString().toLowerCase().replace(/\\./g, '').indexOf(c.toLowerCase()) > -1) {
                 updateStatus(STATUSES["invalid"], identity);
@@ -932,6 +964,7 @@ function pick_operation(json, identity) {
             }
         }
 
+        // DEBUG
         print("REQUESTED CATEGORY: " + cmd_category);
         print("REQUESTED CMD: " + OPERATIONS[cmd_category][command]);
         print("REQUIRED PARAMS: " + OPERATIONS[cmd_category][command][2]);
@@ -940,6 +973,7 @@ function pick_operation(json, identity) {
 
         let required_params = OPERATIONS[cmd_category][command][2].split(",");
 
+        // DEBUG
         print("REQUIRED PARAMS LENGTH: " + required_params.length);
         print("SUBMITTED PARAMS LENGTH: " + params.length);
 
@@ -963,7 +997,6 @@ function pick_operation(json, identity) {
             cmd = params[0];
         }
 
-        print("CONSTRUCTED CMD: " + cmd);
         const run = new Function("identity", cmd);
 
         // Try running the constructed command and catch any errors
@@ -997,8 +1030,11 @@ if (!listening) { throw { "name": "Disabled", "message": "Listening is disabled.
 
 updateStatus(STATUSES["starting"]);
 let webSocketServer = ((PORT > 0) ? new WebSocketServer(PORT) : new WebSocketServer());       // If PORT is 0, just randomize it.
-SERVER_URL = webSocketServer.url;
-updateStatus(STATUSES["on"] + " at URL " + SERVER_URL + " ");
+serverURL = webSocketServer.url;
+updateStatus(STATUSES["on"] + " at URL " + serverURL + " ");
+Entities.editEntity(UUID, {
+    "text": STATUSES["on"] + " on port " + webSocketServer.port
+});
 
 function onNewConnection(webSocket) {
 
@@ -1021,7 +1057,7 @@ function onNewConnection(webSocket) {
         sendToClient(welcome_msg, "INFO", identity);
     }
     webSocket.onclose = function (message) {
-        updateStatus("Connection closed.");
+        updateStatus("Closed connection to client");
     }
 
     webSocket.onmessage = function (message) {
@@ -1075,14 +1111,19 @@ function onNewConnection(webSocket) {
             }
 
             authenticated = authenticate_result[0];
-            attempts = authenticate_result[1];
+            auth_attempts = authenticate_result[1];
 
         }
 
         // Provide a list to the user of possible actions
         if (authenticated === true && identity.role > -1 && handshake_valid === true) {
-            // Check if this is a special client type, such as Blender or AI
             pick_operation(msg_json, identity);
+
+            if (identity.complete) {
+                closeSocket(STATUSES["complete"], identity);
+                updateStatus(STATUSES["complete"], identity);
+                return;
+            }
         }
     }
 
