@@ -10,7 +10,7 @@ A WebSockets server script that runs within an existing Overte domain server. Th
 - The bridge server should begin running automatically as soon as you import the JSON file. Sometimes you might need to restart the domain server though.
 - Using Python, you can run the [test client](https://github.com/theanine3D/overte-addons/blob/main/Bridge_Server/test_client.py) via a command line to interact with your new bridge server.
 
-Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed. 
+Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed. Another issue that also needs to be addressed in Overte is a limitation on server entities [being unable to 'find' other entities](https://github.com/overte-org/overte/issues/414) - this limitation means that the bridge server can only detect entities in your scene that have a script file set in its entity proprties. (The empty.js file is provided as a temporary workaround for this.)
 
 Roadmap:
 - Implement Blender bridge functions to enable use of Blender as the sole scene editing tool for Overte 
