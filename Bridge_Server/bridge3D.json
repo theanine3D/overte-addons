@@ -1,0 +1,132 @@
+{
+    "DataVersion": 0,
+    "Entities": [
+        {
+            "id": "{c0e0ef7e-f511-44dc-b9fa-8fa463c3526f}",
+            "type": "Model",
+            "lastEdited": 1684534734675034,
+            "name": "bridgeGlobe",
+            "dimensions": {
+                "x": 1.9473278522491455,
+                "y": 1.947328805923462,
+                "z": 1.9473280906677246
+            },
+            "rotation": {
+                "x": 0.0005029313615523279,
+                "y": 0.7274625301361084,
+                "z": -0.00014961556007619947,
+                "w": -0.6861473321914673
+            },
+            "created": 1684219751301120,
+            "lastEditedBy": "{df6395d4-c207-4cce-bbd7-5cbf10958026}",
+            "queryAACube": {
+                "x": -5.059307098388672,
+                "y": -5.059307098388672,
+                "z": -5.059307098388672,
+                "scale": 10.118614196777344
+            },
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                }
+            },
+            "angularVelocity": {
+                "x": -0.00000798934979684418,
+                "y": 0.26179900765419006,
+                "z": 0.000007989593541424256
+            },
+            "damping": 0,
+            "angularDamping": 0,
+            "collisionMask": 24,
+            "collidesWith": "myAvatar,otherAvatar,",
+            "serverScripts": "atp:/empty.js",
+            "shapeType": "sphere",
+            "modelURL": "https://github.com/theanine3D/overte-addons/raw/main/Bridge_Server/bridge_globe.glb",
+            "blendshapeCoefficients": "{\n}\n",
+            "useOriginalPivot": true,
+            "animation": {
+                "allowTranslation": false
+            },
+            "clientOnly": false,
+            "avatarEntity": false,
+            "localEntity": false,
+            "faceCamera": false,
+            "isFacingAvatar": false
+        },
+        {
+            "id": "{99e34337-17b7-443d-ac89-3377cf0f7cc5}",
+            "type": "Model",
+            "lastEdited": 1684534734675875,
+            "name": "bridgeRing",
+            "dimensions": {
+                "x": 2.8000411987304688,
+                "y": 2.9554190635681152,
+                "z": 0.4374515414237976
+            },
+            "rotation": {
+                "x": -0.247811958193779,
+                "y": -0.3769509196281433,
+                "z": -0.7507343292236328,
+                "w": -0.4825921654701233
+            },
+            "created": 1684220153954304,
+            "lastEditedBy": "{df6395d4-c207-4cce-bbd7-5cbf10958026}",
+            "queryAACube": {
+                "x": -6.141963958740234,
+                "y": -6.141963958740234,
+                "z": -6.141963958740234,
+                "scale": 12.283927917480469
+            },
+            "grab": {
+                "grabbable": false,
+                "equippableLeftRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                },
+                "equippableRightRotation": {
+                    "x": -0.0000152587890625,
+                    "y": -0.0000152587890625,
+                    "z": -0.0000152587890625,
+                    "w": 1
+                }
+            },
+            "angularVelocity": {
+                "x": 0.26179900765419006,
+                "y": 0.43633198738098145,
+                "z": 0.6108649969100952
+            },
+            "damping": 0,
+            "angularDamping": 0,
+            "collisionless": true,
+            "ignoreForCollisions": true,
+            "collisionMask": 24,
+            "collidesWith": "myAvatar,otherAvatar,",
+            "serverScripts": "atp:/empty.js",
+            "modelURL": "https://github.com/theanine3D/overte-addons/raw/main/Bridge_Server/bridge_ring.glb",
+            "blendshapeCoefficients": "{\n}\n",
+            "useOriginalPivot": true,
+            "animation": {
+                "allowTranslation": false
+            },
+            "clientOnly": false,
+            "avatarEntity": false,
+            "localEntity": false,
+            "faceCamera": false,
+            "isFacingAvatar": false
+        }
+    ],
+    "Id": "{80daf67c-bafb-4534-bdbd-e9b97808f640}",
+    "Version": 133
+}
