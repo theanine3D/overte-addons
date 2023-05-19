@@ -2,7 +2,7 @@
 My personal collection of scripts, shaders, and addons for the open source social VR platform, [Overte](https://overte.org/).
 
 ## Bridge Server
-A WebSockets server script that runs within an existing Overte domain server. The bridge server provides a friendly WebSockets API for other software, engines, and platforms to connect to the Overte domain server and interact with it. A simple CLI client is in the works to showcase what the bridge server can do. Setup instructions will be provided once further testing has completed. Note: extremely alpha and in need of more testing, so do not use in a production environment yet.
+A WebSockets server script that runs within an existing Overte domain server. The bridge server provides a friendly WebSockets API for other software, engines, and platforms to connect to the Overte domain server and interact with it. A simple CLI client is provided that can be used to interface with the bridge server via command line promps. Blender bridge and AI functions are on the roadmap.
 
 Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed. 
 
