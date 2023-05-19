@@ -1,5 +1,5 @@
 //
-// Overte Bridge Server - v0.1.7
+// Overte Bridge Server - v0.1.8
 //
 //      Before use, please customize the security settings near the top.
 //
@@ -18,7 +18,7 @@ const USER_PASSWORD = "n6C3dpUc1H";
 // GENERAL SETTINGS
 let listening = true;                               // If set to false, the bridge server will go offline.
 let verbose = true;                                 // If true, the bridge server will repeatedly send out messages on the messaging server of its current status, which entities in-world can receive
-let local_only = false;                             // If true, only localhost can connect to bridge. Recommended if only connecting with Blender on same machine as bridge server
+let local_only = true;                              // If true, only localhost can connect to bridge. Recommended if only connecting with Blender on same machine as bridge server
 
 const STATUS_CHANNEL = "bridge.status";             // Status messages about the bridge server, available to in-world entities
 const CHAT_CHANNEL = "bridge.chat";                 // Channel for chat messages exchanged between server/client(s)
@@ -48,6 +48,7 @@ const CLIENT_TYPES = {
     "V-Sekai": true,        // Open-source virtual world platform created in Godot Engine
     "Hubs": true,           // Entirely web-based social VR platform created by Mozilla 
     "OpenSim": true,        // OpenSimulator-compatible viewer such as Firestorm
+    "Other": true,          // Any other client that doesn't fit into the above pre-defined types
 }
 
 //
@@ -98,9 +99,6 @@ const STATUSES = {
     "rightPass": "Successful login",
     "gotBlend": "Data received from Blender",
     "sentBlend": "Data sent to Blender",
-    "newMesh": "New 3D mesh created",
-    "newModel": "New 3D model created",
-    "updatedModel": "Updated 3D model",
     "gotChat": "Chat message received from client",
     "sentChat": "Chat message sent to clients",
     "chatToolong": "Blocked chat msg beyond limit",
@@ -201,21 +199,6 @@ const OPERATIONS = {
             ["Check if specific avatar within specific distance",
                 'sendToClient(Avatar.isAvatarInRange({\"x\":x_int,\"y\":y_int,\"z\":z_int},distance_int),"OUTPUT",identity)',
                 "x_int,y_int,z_int,distance_int"
-            ],
-        "getModelByUUID":
-            ["Get 3D model data via UUID",
-                'sendToClient(Graphics.getModel(\"UUID_string\"),"OUTPUT",identity)',
-                "UUID_string"
-            ],
-        "getModelByName":
-            ["Get 3D model data via name",
-                'sendToClient(getTempModel(\"modelName_string\"),"OUTPUT",identity)',
-                "modelName_string"
-            ],
-        "getMeshByName":
-            ["Get 3D mesh data via name",
-                'sendToClient(getTempMesh(\"meshName_string\"),"OUTPUT",identity)',
-                "meshName_string"
             ]
     },
     "Edit": {
@@ -233,26 +216,6 @@ const OPERATIONS = {
             ["Delete existing entity",
                 'sendToClient(Entities.deleteEntity(UUID_string),"OUTPUT",identity)',
                 "UUID_string"
-            ],
-        "createMesh":
-            ["Create 3D mesh from raw geometry data",
-                'sendToClient(createMesh(\"meshName_string\",vertIndices_num_array,vertPositions_vec3_array,vertNormals_vec3_array,vertColors_vec3_array,texcoords0_vec2_array,identity),"INFO",identity)',
-                "meshName_string,vertIndices_num_array,vertPositions_vec3_array,vertNormals_vec3_array,vertColors_vec3_array,texcoords0_vec2_array"
-            ],
-        "createModel":
-            ["Create 3D model from an array of meshes",
-                'createMesh(createModel(meshName_string_array,\"modelName_string\",identity),"INFO",identity)',
-                "meshName_string_array,modelName_string"
-            ],
-        "setModel":
-            ["Set the 3D model of an existing entity",
-                'sendToClient(setModel(\"UUID_string\",\"modelName_string\",identity),"INFO",identity)',
-                "UUID_string,modelName_string"
-            ],
-        "getModelAsOBJ":
-            ["Get 3D model data in OBJ format",
-                'sendToClient(Graphics.exportModelToOBJ(\"modelName_string\"),"OUTPUT",identity)',
-                "modelName_string"
             ],
         "getATPText":
             ["Download text data from ATP",
@@ -283,7 +246,7 @@ const OPERATIONS = {
             ],
         "shutdown":
             ["Shutdown the bridge server",
-                "webSocketServer.close(); connectedClients = []; tempModels = []; tempMeshes = []; updateStatus(STATUSES['off'],identity)",
+                "webSocketServer.close(); connectedClients = []; updateStatus(STATUSES['off'],identity)",
                 ""
             ],
         "toggleVerbose":
@@ -304,6 +267,8 @@ const OPERATIONS = {
     }
 };
 
+// NOTE: DEPRECATED. Remove this later
+//
 // These operations are never shown to CLI clients. They're intended for editing tools like Blender, as well as AI-powered scripts
 //       Format:
 //              KEY = name of the function
@@ -312,16 +277,15 @@ const OPERATIONS = {
 const OPERATIONS_HIDDEN = {
     "Blender":
     {
-        "json2Blender": "range_int,x_int,y_int,z_int,type_string",
-        "json2Bridge": "range_int,x_int,y_int,z_int,type_string",
-        "syncUUID": "entitiesUUID_array"
-
+        "bridge2blender": "entityUUID_string_array",
+        "blender2bridge": "entityUUID_string_array",
+        "syncUUID": "entityUUID_string_array"
     },
     "AI":
     {
-        "botSpeak": "UUID_string,msg_string",
-        "botListen": "UUID_string,msg_string",
-        "botRespond": "UUID_string,msg_string"
+        "botSpeak": "botName_string,msg_string",
+        "botListen": "botName_string,,msg_string",
+        "botRespond": "botName_string,msg_string"
     }
 }
 
@@ -353,8 +317,6 @@ const welcome_msg = ("Welcome to the Overte bridge server for " + DOMAIN_NAME + 
 //
 
 var connectedClients = [];
-var tempMeshes = {};
-var tempModels = {};
 var serverURL = "";
 
 // Find and retrieve the bridge's in-world 3D models
@@ -404,11 +366,12 @@ function isValidIP(text) {
     result = regex.test(text);
 
     // If Local Only is enabled, check if it's the same IP as the server itself
-    if (local_only) {
-        if ((serverURL.indexOf(result) === -1)) {
+    if (local_only && result) {
+        if ((serverURL.indexOf(text.replace(regex, ""))) === -1) {
             return false;
         }
     }
+
     return result;
 }
 
@@ -519,101 +482,16 @@ function handleAsset(path, binaryOn, data_string, identity, mode) {
     }
 }
 
-function createMesh(meshName_string, vert_indices_num_array, vert_positions_vec3_array, vert_normals_vec3_array, vert_colors_vec3_array, texcoords0_vec2_array, identity) {
-    if (meshName_string in tempMeshes) {
-        let last_char = meshName_string.slice(-1);
-        if (isNaN(last_char)) {
-            meshName_string += "2";
-        }
-        else {
-            meshName_string = meshName_string.slice(0, -1) + (parseInt(last_char) + 1);
-        }
-    }
-
-    let ifsMeshData = {
-        name: meshName_string,
-        topology: "triangles",  // Triangles are the only option currently supported by Overte
-        indices: vert_indices_num_array,
-        positions: vert_positions_vec3_array,
-        normals: vert_normals_vec3_array,
-        colors: vert_colors_vec3_array,
-        texCoords0: texcoords0_vec2_array
-    }
-    let tempMesh = Graphics.newMesh(ifsMeshData);
-    tempMeshes[meshName_string] = tempMesh;
-
-    let status = STATUSES["newMesh"] + " with name " + ifsMeshData.name;
-
-    updateStatus(status, identity);
-    return status;
-}
-
-function createModel(meshName_string_array, modelName_string, identity) {
-    if (modelName_string in tempModels) {
-        let last_char = modelName_string.slice(-1);
-        if (isNaN(last_char)) {
-            modelName_string += "2";
-        }
-        else {
-            modelName_string = modelName_string.slice(0, -1) + (parseInt(last_char) + 1);
-        }
-    }
-
-    let tempModel = Graphics.newModel(meshName_string_array);
-    tempModels[modelName_string] = tempModel;
-
-    let status = STATUSES["newModel"] + " with name " + modelName_string;
-
-    updateStatus(status, identity);
-    return status;
-}
-
-function setModel(UUID_string, modelName_string, identity) {
-    // Check permissions. Only those with admin permissions should be able to change avatar models
-    if (Entities.getEntityProperties(UUID_string, ["entityHostType"]) === "avatar") {
-        if (ROLES[identity.role][1].indexOf("a") === -1) {
-            return STATUSES['wrongPerm'];
-        }
-    }
-
-    Graphics.updateModel(UUID_string, modelName_string);
-
-    let status = STATUSES["updatedModel"] + " of entity named '" + Entities.getEntityProperties(UUID_string, ["name"]) + "'";
-    updateStatus(status, identity);
-    return status;
-}
-
-function getTempModel(model_name, identity) {
-    if (model_name in tempModels) {
-        updateStatus("Sent 3D model data to client", identity);
-        return tempModels[model_name];
-    }
-    else {
-        updateStatus("Client requested invalid 3D model data", identity);
-        return;
-    }
-}
-function getTempMesh(mesh_name, identity) {
-    if (mesh_name in tempMeshes) {
-        updateStatus("Sent 3D mesh data to client", identity);
-        return tempMeshes[mesh_name];
-    }
-    else {
-        updateStatus("Client requested invalid 3D mesh data", identity);
-        return;
-    }
-}
-
 // TODO: Implement Blender bridge functions
-function json2Blender(identity) {
+function bridge2Blender(data, identity) {
     let socket = identity.socket;
 }
 
-function json2Bridge(identity) {
+function json2Bridge(data, identity) {
     let socket = identity.socket;
 }
 
-function syncUUID(identity) {
+function syncUUID(data, identity) {
     let socket = identity.socket;
 }
 
@@ -629,7 +507,7 @@ function updateStatus(status, identity = undefined) {
 
         // Send status via status channel
         Messages.sendMessage(STATUS_CHANNEL, "[ " + timestamp.toLocaleString() + " ] " + status);
-        print(status);
+        console.debug(status);
         Entities.editEntity(UUID, {
             "text": "Bridge: " + status
         });
@@ -684,7 +562,7 @@ function parseJSON(message, socket) {
 function incorrectCmd(socket) {
     let error = "ERROR: Incorrect input received.";
     sendToClient(error, "INFO", identity);
-    print(error);
+    console.debug(error);
 }
 
 function closeSocket(reason = "", identity, code = 1002) {
@@ -705,7 +583,7 @@ function closeSocket(reason = "", identity, code = 1002) {
             code = 1011;
     }
 
-    print(reason);
+    console.debug(reason);
     updateStatus("Connection closed because: " + reason);
     socket.close(code, reason);
     connectedClients = connectedClients.filter(item => JSON.stringify(item) !== JSON.stringify(identity));
@@ -838,12 +716,30 @@ function pick_operation(json, identity) {
     let param_string = "";
     let params = [];
     let cli_mode = identity.clientType === "CLI";
-    let hidden_ops_enabled = (identity.clientType in OPERATIONS_HIDDEN);
     let valid_operations = [];
     let prompt = "Please pick a command from the list below.\n\n";
 
+    // Blender Bridge
+    if (identity.clientType === "Blender") {
+        if (ROLES[identity.role][1].indexOf("a") > -1 || ROLES[identity.role][1].indexOf("e") > -1) {
+            if ("operation" in json) {
+                switch (json.operation) {
+
+                    // Blender push to Bridge
+                    case "push":
+                        blender2bridge(json.blender, identity);
+                    case "pull":
+                        bridge2blender(identity);
+                    case "sync":
+                        syncUUID(identity);
+                }
+            }
+
+        }
+    }
+
     // For CLI clients
-    if (identity.clientType === "CLI" && (json.operation === "" || json.operation === undefined)) {
+    if (cli_mode && (json.operation === "" || json.operation === undefined)) {
 
         if (json.response === ROLES[parseInt(identity.role)][2]) {
             json.response = "";
@@ -879,11 +775,11 @@ function pick_operation(json, identity) {
         prompt += "\n";
     }
 
-    if (hidden_ops_enabled) {
-        for (op in Object.keys(OPERATIONS_HIDDEN[identity.clientType])) {
-            valid_operations.push(op);
-        }
-    }
+    // if (hidden_ops_enabled) {
+    //     for (op in Object.keys(OPERATIONS_HIDDEN[identity.clientType])) {
+    //         valid_operations.push(op);
+    //     }
+    // }
 
     if (cli_mode) {
         prompt += "Examples:\n";
@@ -895,7 +791,7 @@ function pick_operation(json, identity) {
     if (isNaN(parseInt(json.operation)) && json.operation !== "") {
 
         // Security checks to prevent potentially malicious code
-        const CHECKS = ["console.log(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password", "JSON.parse"];
+        const CHECKS = ["console.debug(", "eval(", "Function(", "setTimeout(", "setInterval(", "print(", "return", "webSocket.send", "sendToClient", "connectedClients", "password", "JSON.parse"];
         for (c of CHECKS) {
             if (json.operation.toString().toLowerCase().replace(/\\./g, '').indexOf(c.toLowerCase()) > -1) {
                 updateStatus(STATUSES["invalid"], identity);
@@ -907,6 +803,7 @@ function pick_operation(json, identity) {
         // Parse the operation provided by client
         try {
             command = json.operation.slice(0, (json.operation.indexOf("(") > -1 ? json.operation.indexOf("(") : json.operation.length));
+
             if (json.operation.indexOf("(") > -1) {
                 param_string = json.operation.slice(json.operation.indexOf("(") + 1, json.operation.lastIndexOf(")"));
             }
@@ -921,8 +818,8 @@ function pick_operation(json, identity) {
         }
 
         // DEBUG
-        updateStatus("COMMAND STRING: " + command, identity);
-        updateStatus("PARAMS STRING: " + param_string, identity);
+        // updateStatus("COMMAND STRING: " + command, identity);
+        // updateStatus("PARAMS STRING: " + param_string, identity);
 
         // Check if requested command is valid
         if (valid_operations.indexOf(command) === -1) {
@@ -965,17 +862,17 @@ function pick_operation(json, identity) {
         }
 
         // DEBUG
-        print("REQUESTED CATEGORY: " + cmd_category);
-        print("REQUESTED CMD: " + OPERATIONS[cmd_category][command]);
-        print("REQUIRED PARAMS: " + OPERATIONS[cmd_category][command][2]);
-        print("SUBMITTED PARAMS: " + params);
-        print("SUBMITTED PARAMS TYPE: " + typeof (params));
+        // print("REQUESTED CATEGORY: " + cmd_category);
+        // print("REQUESTED CMD: " + OPERATIONS[cmd_category][command]);
+        // print("REQUIRED PARAMS: " + OPERATIONS[cmd_category][command][2]);
+        // print("SUBMITTED PARAMS: " + params);
+        // print("SUBMITTED PARAMS TYPE: " + typeof (params));
 
         let required_params = OPERATIONS[cmd_category][command][2].split(",");
 
         // DEBUG
-        print("REQUIRED PARAMS LENGTH: " + required_params.length);
-        print("SUBMITTED PARAMS LENGTH: " + params.length);
+        // print("REQUIRED PARAMS LENGTH: " + required_params.length);
+        // print("SUBMITTED PARAMS LENGTH: " + params.length);
 
         if (required_params[0] === "") {
             required_params = [];
@@ -1042,6 +939,9 @@ function onNewConnection(webSocket) {
         // If "listening" is set to false, exit instead of proceeding
         closeSocket(STATUSES["off"], { "socket": webSocket });
     }
+    sendToClient(welcome_art, "INFO", { "socket": webSocket });
+    sendToClient(welcome_msg, "INFO", { "socket": webSocket });
+
     // Setup variables for this client
     var identity = undefined;
     let handshake_valid = undefined;
@@ -1052,10 +952,6 @@ function onNewConnection(webSocket) {
 
     updateStatus(STATUSES["connected"] + ": " + webSocket.url);
 
-    webSocket.onopen = function () {
-        sendToClient(welcome_art, "INFO", identity);
-        sendToClient(welcome_msg, "INFO", identity);
-    }
     webSocket.onclose = function (message) {
         updateStatus("Closed connection to client");
     }
@@ -1129,6 +1025,33 @@ function onNewConnection(webSocket) {
 
 }
 
+function onStatusReceived(channel, message, sender, localOnly) {
+    Entities.editEntity(UUID, {
+        "text": "Bridge: " + message
+    });
+    if (message.length > 56) {
+        Entities.editEntity(UUID, {
+            "dimensions": {
+                "x": 2.9,
+                "y": 0.7693,
+                "z": 0.0100
+            }
+        });
+    }
+    else {
+        Entities.editEntity(UUID, {
+            "dimensions": {
+                "x": 2.9,
+                "y": 0.4935,
+                "z": 0.01
+            }
+        });
+    }
+}
+
+
 (function () {
     webSocketServer.newConnection.connect(onNewConnection);
+    Messages.subscribe("bridge.status");
+    Messages.messageReceived.connect(onStatusReceived);
 })
