@@ -11,7 +11,7 @@ A WebSockets server script that runs within an existing Overte domain server. Th
 - Using Python, you can run the [test client](https://github.com/theanine3D/overte-addons/blob/main/Bridge_Server/test_client.py) via a command line to interact with your new bridge server.
 
 #### Notes
-- Currently, Overte randomizes the port of every WebSocketsServer, making this script less useful. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed.
+- Currently, Overte randomizes the port of every WebSocketsServer, making the bridge server less useful, requiring the client to connect on a different port every time the server restarts. However, [an issue](https://github.com/overte-org/overte/issues/396) has been created for this limitation in Overte to be addressed.
 - Overte has an additional limitation on server entities [being unable to 'find' other entities](https://github.com/overte-org/overte/issues/414) - this limitation means that the bridge server can only detect entities in your scene that have a script file set in its entity properties. (The empty.js file is provided as a temporary workaround for this.)
 
 Roadmap:
